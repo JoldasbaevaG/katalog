@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kolbasa Distribyutsiya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Onest:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: yuqorida yopishqoq sarlavha, pastda keng kontent; savat va buyurtma sahifalarida chapda ro'yxat, o'ngda yopishqoq xulosa. */
+:root{
+  --bg:#F1F4F2; --surface:#FFFFFF; --surface-2:#F5F7F6; --ink:#14201A; --muted:#58675F; --line:#DAE1DD;
+  --accent:#0D5C46; --accent-ink:#FFFFFF; --accent-soft:#DBEBE4;
+  --opt:#85500A; --opt-soft:#FAEACB;
+  --ok:#17703F; --ok-soft:#D8F0E1; --bad:#A92A1F; --bad-soft:#F8DEDA; --info:#1B56B8; --info-soft:#DDE8F8; --warn:#85500A; --warn-soft:#FAEACB;
+  --tile-s:34%; --tile-l:90%; --tile-ink:26%;
+  --shadow:0 1px 2px rgba(20,32,26,.06),0 8px 24px rgba(20,32,26,.07);
+  --font:'Onest',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1512; --surface:#161F1B; --surface-2:#1C2722; --ink:#E7EEEA; --muted:#97A99F; --line:#273530;
+    --accent:#4DBE98; --accent-ink:#062319; --accent-soft:#1B3A30;
+    --opt:#EDB75E; --opt-soft:#3A2B10;
+    --ok:#5ED08F; --ok-soft:#173A27; --bad:#FF8A7D; --bad-soft:#44201C; --info:#8DB5FF; --info-soft:#1B2B4A; --warn:#EDB75E; --warn-soft:#3A2B10;
+    --tile-s:26%; --tile-l:24%; --tile-ink:80%;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1512; --surface:#161F1B; --surface-2:#1C2722; --ink:#E7EEEA; --muted:#97A99F; --line:#273530;
+  --accent:#4DBE98; --accent-ink:#062319; --accent-soft:#1B3A30;
+  --opt:#EDB75E; --opt-soft:#3A2B10;
+  --ok:#5ED08F; --ok-soft:#173A27; --bad:#FF8A7D; --bad-soft:#44201C; --info:#8DB5FF; --info-soft:#1B2B4A; --warn:#EDB75E; --warn-soft:#3A2B10;
+  --tile-s:26%; --tile-l:24%; --tile-ink:80%;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px}
+h1,h2,h3{margin:0;line-height:1.15;text-wrap:balance;letter-spacing:-.015em}
+h1{font-size:clamp(24px,4.2vw,34px);font-weight:700}
+h2{font-size:21px;font-weight:650}
+h3{font-size:17px;font-weight:600}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.fine{font-size:13px;color:var(--muted)}
+.sub{color:var(--muted);margin-top:6px;max-width:60ch}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Sarlavha */
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.hdr-in{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.01em;background:none;border:0;padding:0;min-width:0}
+.brand-mark{width:34px;height:34px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.brand span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav{display:flex;gap:4px;order:3;width:100%;overflow-x:auto;scrollbar-width:none}
+.nav button{background:none;border:0;padding:8px 12px;border-radius:8px;color:var(--muted);font-weight:550;white-space:nowrap}
+.nav button:hover{background:var(--surface-2)}
+.nav button.on{background:var(--accent-soft);color:var(--accent)}
+.hdr-r{margin-left:auto;display:flex;gap:8px;align-items:center;min-width:0}
+@media(min-width:820px){.nav{order:0;width:auto}}
+.acct{display:flex;align-items:center;gap:8px;min-height:40px;padding:0 12px 0 6px;border:1px solid var(--line);border-radius:99px;background:var(--surface);max-width:220px}
+.acct .av{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.acct-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:550;font-size:14px}
+@media(max-width:520px){.acct-n{display:none}.acct{padding:0 6px}}
+.badge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--accent-ink);color:var(--accent);font-size:12px;font-weight:700}
+.cart-sum{font-variant-numeric:tabular-nums}
+@media(max-width:520px){.cart-sum{display:none}}
+
+/* Tugmalar */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-weight:550;white-space:nowrap;transition:background .15s}
+.btn:hover{background:var(--surface-2)}
+.btn-p{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-p:hover{background:var(--accent);filter:brightness(1.1)}
+.btn-opt{background:var(--opt-soft);border-color:transparent;color:var(--opt)}
+.btn-opt:hover{background:var(--opt-soft);filter:brightness(.97)}
+.btn-lg{min-height:48px;font-size:16px;padding:0 20px}
+.btn-sm{min-height:34px;padding:0 10px;font-size:14px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.lnk{background:none;border:0;padding:0;color:var(--accent);font-weight:550;text-decoration:underline;text-underline-offset:3px}
+.x{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-size:20px;line-height:1;flex:none;color:var(--muted)}
+.x:hover{background:var(--surface-2)}
+
+main{padding-block:24px 56px;display:flex;flex-direction:column;gap:20px}
+.page-h{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
+.search{flex:1 1 260px;max-width:380px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.note{background:var(--info-soft);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.note.warn{background:var(--warn-soft)}
+.note.bad{background:var(--bad-soft)}
+.empty{padding:40px 20px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:14px;align-items:center}
+.crumb{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:14px}
+
+/* Firmalar */
+.grid-f{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media(max-width:600px){
+  .grid-f{gap:8px}
+  .ftile{padding:12px 8px;align-items:center;text-align:center;gap:8px}
+  .ftile .mtile{width:44px!important;height:44px!important;font-size:18px!important}
+  .ftile b{font-size:14px;overflow-wrap:anywhere}
+  .ftile .meta{font-size:12px}
+  .ftile .cats{display:none}
+}
+.btn-del{color:var(--bad)}
+.addbox{padding:18px;display:flex;flex-direction:column;gap:14px}
+.ftile{padding:18px;display:flex;flex-direction:column;gap:16px;text-align:left;transition:box-shadow .15s,transform .15s;min-width:0}
+.ftile:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.ftile b{font-size:19px;letter-spacing:-.01em}
+.ftile .meta{color:var(--muted);font-size:14px}
+.ftile .cats{display:flex;flex-wrap:wrap;gap:6px}
+.mtile{border-radius:12px;background:hsl(var(--h) var(--tile-s) var(--tile-l));color:hsl(var(--h) 45% var(--tile-ink));display:grid;place-items:center;font-weight:700;flex:none;letter-spacing:-.02em}
+.tag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.pill{display:inline-block;font-size:12.5px;padding:2px 9px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+.firm-h{display:flex;align-items:center;gap:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;font-weight:550;font-size:14px;display:inline-flex;gap:8px;align-items:center}
+.chip span{color:var(--muted);font-weight:500}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip.on span{color:inherit;opacity:.8}
+
+/* Mahsulotlar */
+.grid-p{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.pcard{padding:16px;display:flex;flex-direction:column;gap:10px;transition:box-shadow .15s;min-width:0;cursor:pointer}
+.pcard:hover{box-shadow:var(--shadow)}
+.pc-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.pcard h3{overflow-wrap:anywhere}
+.prices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.prices>div{padding:10px;border-radius:9px;background:var(--surface-2);display:flex;flex-direction:column;gap:1px;min-width:0}
+.prices .opt{background:var(--opt-soft)}
+.prices .lbl{font-size:12px;color:var(--muted)}
+.prices .opt .lbl{color:var(--opt)}
+.prices b{font-variant-numeric:tabular-nums;font-size:15px;white-space:nowrap}
+.prices small{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pc-act{display:flex;gap:8px;margin-top:2px}
+.pc-act .btn{flex:1;min-width:0}
+.out{color:var(--bad);font-weight:600;padding:8px 0}
+
+/* Oyna */
+.ov{position:fixed;inset:0;background:rgba(8,16,12,.55);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.md{background:var(--surface);width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow:auto;border-radius:16px 16px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+@media(min-width:640px){.ov{align-items:center;padding:20px}.md{border-radius:16px;box-shadow:var(--shadow)}}
+.md-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.md-t{display:flex;gap:12px;align-items:center;min-width:0}
+.spec{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0}
+.spec>div{padding:10px 12px;background:var(--surface-2);border-radius:9px;min-width:0}
+.spec dt{font-size:12px;color:var(--muted)}
+.spec dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+.spec dd small{display:block;font-weight:400;font-size:12.5px;color:var(--muted)}
+.sec{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.buy{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.buy-f{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--line)}
+.big{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:2px}
+.seg button{border:0;background:none;padding:7px 12px;border-radius:8px;font-weight:550;font-size:14px;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.qty{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.qty button{width:38px;height:38px;background:var(--surface);border:0;font-size:18px}
+.qty button:hover{background:var(--surface-2)}
+.qty input{width:56px;text-align:center;border:0;border-inline:1px solid var(--line);background:var(--surface);font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.qty input::-webkit-inner-spin-button,.qty input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+/* Savat */
+.split{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media(max-width:900px){.split{grid-template-columns:minmax(0,1fr)}}
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+.line{padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:12px 16px;align-items:center}
+.line .ln-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ln-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ln-sum{text-align:right;display:flex;flex-direction:column;min-width:110px;font-variant-numeric:tabular-nums}
+@media(max-width:720px){.line{grid-template-columns:minmax(0,1fr) auto}.ln-ctl{grid-column:1/-1}.ln-sum{text-align:left;flex-direction:row;gap:10px;align-items:baseline;grid-column:1/2}}
+.sumbox{padding:18px;display:flex;flex-direction:column;gap:12px;position:sticky;top:calc(84px + env(safe-area-inset-top,0px))}
+@media(max-width:900px){.sumbox{position:static}}
+.sumbox dl{margin:0;display:flex;flex-direction:column;gap:6px}
+.sumbox dl div{display:flex;justify-content:space-between;gap:12px}
+.sumbox dt{color:var(--muted)}
+.sumbox dd{margin:0;font-variant-numeric:tabular-nums;font-weight:550}
+.sumbox .tot{padding-top:12px;border-top:1px solid var(--line);align-items:baseline}
+.sumbox .tot dd{font-size:22px;font-weight:700}
+
+/* Formalar */
+.form{padding:20px;display:flex;flex-direction:column;gap:18px}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media(max-width:640px){.fgrid{grid-template-columns:minmax(0,1fr)}}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field.full{grid-column:1/-1}
+.field>label,.lab{font-weight:600;font-size:14px}
+.in{width:100%;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink)}
+textarea.in{padding:10px 12px;min-height:84px;resize:vertical}
+.in.sm{min-height:36px;max-width:150px;text-align:right;font-variant-numeric:tabular-nums}
+.in.bad{border-color:var(--bad)}
+.err{color:var(--bad);font-size:13px}
+.hint{color:var(--muted);font-size:13px}
+.pays{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(max-width:640px){.pays{grid-template-columns:minmax(0,1fr)}}
+.payopt{display:flex;gap:10px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);align-items:flex-start;cursor:pointer}
+.payopt.on{border-color:var(--accent);background:var(--accent-soft)}
+.payopt input{margin-top:4px;accent-color:var(--accent)}
+.payopt b{display:block}
+.payopt span{font-size:13px;color:var(--muted)}
+.h-sec{display:flex;flex-direction:column;gap:12px}
+.mini{padding:14px 16px;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;justify-content:space-between}
+
+/* Buyurtmalar */
+.st{display:inline-flex;align-items:center;padding:2px 10px;border-radius:99px;font-size:13px;font-weight:600;white-space:nowrap}
+.st-new{background:var(--info-soft);color:var(--info)}
+.st-ok{background:var(--warn-soft);color:var(--warn)}
+.st-way{background:var(--accent-soft);color:var(--accent)}
+.st-done{background:var(--ok-soft);color:var(--ok)}
+.st-cancel{background:var(--bad-soft);color:var(--bad)}
+.ord summary{list-style:none;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;cursor:pointer}
+.ord summary::-webkit-details-marker{display:none}
+.ord .o-body{padding:4px 16px 16px;display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--line)}
+.ord .o-body>*:first-child{margin-top:14px}
+.o-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.o-info div{min-width:0;overflow-wrap:anywhere}
+.o-info dt{font-size:12px;color:var(--muted)}
+.o-info dd{margin:0}
+.o-info{margin:0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.stat{padding:14px 16px}
+.stat b{display:block;font-size:24px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:14px}
+.done{padding:32px 20px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.done .ok{width:48px;height:48px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:60;max-width:calc(100% - 32px);box-shadow:var(--shadow);font-weight:550}
+.toast.bad{background:var(--bad);color:#fff}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+<div id="modal"></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- Ma'lumotlar: firmalar va mahsulotlar (namunaviy) ---------- */
+var FIRMS=[
+  {k:'sagban',n:'Sagban',h:155},
+  {k:'sherin',n:'Sherin',h:345},
+  {k:'atabekov',n:'Atabekov',h:210},
+  {k:'papamojet',n:'Papa Mojet',h:35},
+  {k:'cherkizovo',n:'Cherkizovo',h:8},
+  {k:'umarov',n:'Umarov',h:270}
+];
+var RAW=[
+  ['sagban','Pishirilgan kolbasa','Doktorskaya',450,10,38000,"Mol go'shti, tovuq go'shti, sut, tuxum, tuz, shakar, muskat yong'og'i, nitritli tuz"],
+  ['sagban','Sosiska va sardelka','Sutli sosiska',400,12,34000,"Mol go'shti, tovuq go'shti, sut, tuz, ziravorlar, nitritli tuz"],
+  ['sagban','Dudlangan','Salyami dudlangan',300,12,52000,"Mol go'shti, mol yog'i, tuz, qora murch, sarimsoq, shakar, nitritli tuz"],
+  ['sagban','Yarim dudlangan','Ovchi kolbasasi',350,12,46000,"Mol go'shti, tovuq go'shti, tuz, qizil murch, sarimsoq, nitritli tuz"],
+  ['sagban','Sosiska va sardelka','Sardelka',500,10,42000,"Mol go'shti, tovuq go'shti, sut, tuz, ziravorlar"],
+  ['sagban','Vetchina','Tovuq vetchinasi',400,10,40000,"Tovuq filesi, tuz, shakar, sarimsoq, fosfat stabilizatori, nitritli tuz"],
+
+  ['sherin','Pishirilgan kolbasa','Havaskor kolbasa',450,10,36000,"Mol go'shti, tovuq go'shti, mol yog'i, tuz, qora murch, sarimsoq"],
+  ['sherin','Sosiska va sardelka','Sut sosiskasi',350,12,30000,"Tovuq go'shti, mol go'shti, sut, tuz, ziravorlar"],
+  ['sherin','Sosiska va sardelka','Tovuqli frankfurter',400,12,33000,"Tovuq go'shti, tuz, shakar, sarimsoq, ziravorlar, nitritli tuz"],
+  ['sherin','Pishirilgan kolbasa',"Mol go'shtli maxsus",500,8,55000,"Mol go'shti, tuxum, sut, tuz, muskat yong'og'i, nitritli tuz"],
+  ['sherin','Pashtet','Jigarli pashtet',250,16,22000,"Mol jigari, mol yog'i, sabzi, piyoz, tuz, ziravorlar"],
+  ['sherin','Yarim dudlangan','Qalampirli yarim dudlangan',380,10,48000,"Mol go'shti, tovuq go'shti, qizil qalampir, sarimsoq, tuz, nitritli tuz"],
+
+  ['atabekov','Pishirilgan kolbasa',"Doktorskaya (mol go'shtli)",500,8,48000,"Mol go'shti, sut, tuxum, tuz, shakar, muskat yong'og'i, nitritli tuz"],
+  ['atabekov','Dudlangan','Dudlangan kolbasa',400,10,58000,"Mol go'shti, mol yog'i, tuz, qora murch, sarimsoq, nitritli tuz"],
+  ['atabekov','Sosiska va sardelka','Klassik sosiska',450,10,38000,"Mol go'shti, tovuq go'shti, sut, tuz, ziravorlar"],
+  ['atabekov','Dudlangan','Salyami Premium',300,12,62000,"Mol go'shti, mol yog'i, tuz, qora murch, sarimsoq, shakar, nitritli tuz"],
+  ['atabekov','Pashtet','Jigar kolbasasi',350,12,34000,"Mol jigari, mol go'shti, piyoz, tuz, ziravorlar"],
+  ['atabekov','Sosiska va sardelka','Hot-dog sosiskasi',800,6,62000,"Mol go'shti, tovuq go'shti, sut, tuz, ziravorlar"],
+
+  ['papamojet','Sosiska va sardelka','Sutli sosiskalar',450,12,36000,"Mol go'shti, tovuq go'shti, sut, tuz, ziravorlar, nitritli tuz"],
+  ['papamojet','Sosiska va sardelka','Sardelkalar',480,10,41000,"Mol go'shti, tovuq go'shti, sut, tuz, sarimsoq"],
+  ['papamojet','Pishirilgan kolbasa','Doktorskaya',450,10,39000,"Mol go'shti, tovuq go'shti, sut, tuxum, tuz, muskat yong'og'i"],
+  ['papamojet','Sosiska va sardelka','Qaymoqli sosiskalar',400,12,35000,"Tovuq go'shti, mol go'shti, qaymoq, tuz, ziravorlar"],
+  ['papamojet','Vetchina','Nozik vetchina',400,10,44000,"Tovuq filesi, mol go'shti, tuz, shakar, fosfat stabilizatori"],
+  ['papamojet','Pishirilgan kolbasa','Sut kolbasasi',450,10,37000,"Mol go'shti, tovuq go'shti, sut, tuz, shakar"],
+
+  ['cherkizovo','Sosiska va sardelka','Tovuq sosiskalari Klassik',430,12,37000,"Tovuq go'shti, tuz, shakar, ziravorlar, nitritli tuz"],
+  ['cherkizovo','Pishirilgan kolbasa','Tovuq doktorskaya',400,12,35000,"Tovuq go'shti, sut, tuxum, tuz, muskat yong'og'i"],
+  ['cherkizovo','Vetchina','Kurka vetchinasi',350,12,49000,"Kurka filesi, tuz, shakar, sarimsoq, fosfat stabilizatori"],
+  ['cherkizovo','Sosiska va sardelka','Tovuq sardelkalari',500,10,40000,"Tovuq go'shti, sut, tuz, ziravorlar"],
+  ['cherkizovo','Dudlangan','Dudlangan tovuq kolbasasi',350,12,52000,"Tovuq go'shti, tovuq yog'i, tuz, qora murch, sarimsoq, nitritli tuz"],
+  ['cherkizovo','Pashtet','Tovuq jigari pashteti',200,18,20000,"Tovuq jigari, tovuq yog'i, sabzi, piyoz, tuz, ziravorlar"],
+
+  ['umarov','Pishirilgan kolbasa','Doktorskaya',450,10,37000,"Mol go'shti, tovuq go'shti, sut, tuxum, tuz, muskat yong'og'i"],
+  ['umarov','Pashtet','Jigar kolbasasi',350,12,33000,"Mol jigari, mol go'shti, piyoz, tuz, ziravorlar"],
+  ['umarov','Dudlangan',"Salyami mol go'shtli",320,12,56000,"Mol go'shti, mol yog'i, tuz, qora murch, sarimsoq, nitritli tuz"],
+  ['umarov','Sosiska va sardelka',"Mol sosiskasi",400,12,39000,"Mol go'shti, sut, tuz, ziravorlar, nitritli tuz"],
+  ['umarov','Milliy','Qazi',600,6,98000,"Ot go'shti, ot yog'i, tuz, qora murch, sarimsoq, zira"],
+  ['umarov','Vetchina',"Mol vetchinasi",450,10,52000,"Mol go'shti, tuz, shakar, sarimsoq, fosfat stabilizatori"]
+];
+var PRODUCTS=[],PM={},FM={},BASE=[];
+FIRMS.forEach(function(f){FM[f.k]=f});
+var TYPES=['Pishirilgan kolbasa','Sosiska va sardelka','Yarim dudlangan','Dudlangan','Vetchina','Pashtet','Milliy'];
+var cnt={};
+RAW.forEach(function(r){
+  cnt[r[0]]=(cnt[r[0]]||0)+1;
+  BASE.push({id:r[0]+'-'+cnt[r[0]],firm:r[0],type:r[1],name:r[2],g:r[3],box:r[4],p:r[5],comp:r[6]});
+});
+/* Katalogni asosiy ro'yxat, o'chirilganlar va admin qo'shgan tovarlardan qayta yig'adi */
+function rebuild(cat){
+  PRODUCTS=[];PM={};
+  BASE.concat(cat.custom||[]).forEach(function(p){
+    if((cat.removed||[]).indexOf(p.id)>=0)return;
+    PRODUCTS.push(p);PM[p.id]=p;
+  });
+}
+rebuild({custom:[],removed:[]});
+var SLOTS=['08:00–12:00','12:00–16:00','16:00–20:00'];
+var PAY=[
+  ['cash','Naqd pul',"Yetkazib berilganda to'lanadi"],
+  ['card','Plastik karta',"Uzcard yoki Humo, yetkazishda terminal orqali"],
+  ['bank',"Pul o'tkazish","ChP hisob-raqamiga; rekvizitlar buyurtma tasdiqlangach yuboriladi"],
+  ['credit','Nasiya',"Kelishilgan muddatga; admin tasdiqlaydi"]
+];
+var ST=[['new','Yangi'],['ok','Tasdiqlandi'],['way',"Yo'lda"],['done','Yetkazildi'],['cancel','Bekor qilindi']];
+var BIZ=["Do'kon",'Mini-market','Kafe yoki restoran','Ulgurji savdo','Boshqa'];
+
+/* ---------- Yordamchilar ---------- */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function money(n){return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ')+" so'm"}
+function pad(n){return n<10?'0'+n:''+n}
+function isoDate(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function fmtD(iso){var a=String(iso||'').split('-');return a.length===3?a[2]+'.'+a[1]+'.'+a[0]:''}
+function fmtT(ts){var d=new Date(ts);return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
+function firmOf(k){return FM[k]}
+function defBox(p){return p.cb||Math.round(p.box*p.p*0.95/1000)*1000}
+function numOr(v,d){return typeof v==='number'&&isFinite(v)&&v>0?v:d}
+function eff(p){var o=S.prices[p.id]||{};return {p:numOr(o.p,p.p),c:numOr(o.c,defBox(p)),off:!!o.off}}
+function unit(pid,mode){var e=eff(PM[pid]);return mode==='k'?e.c:e.p}
+function toInt(s){var d=String(s==null?'':s).replace(/\D/g,'');return d?parseInt(d,10):null}
+function phoneDigits(s){var d=String(s||'').replace(/\D/g,'');if(d.indexOf('998')===0)d=d.slice(3);return d}
+function phoneFmt(d){return '+998 '+d.slice(0,2)+' '+d.slice(2,5)+' '+d.slice(5,7)+' '+d.slice(7,9)}
+function clamp(v){v=parseInt(v,10);if(!(v>=1))v=1;if(v>999)v=999;return v}
+function payName(k){for(var i=0;i<PAY.length;i++)if(PAY[i][0]===k)return PAY[i][1];return k}
+var LS={
+  get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+
+/* ---------- Holat ---------- */
+var tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
+var S={
+  view:'katalog',firm:null,type:'all',q:'',modal:null,
+  mode:'pending',db:null,uid:null,isAdmin:false,demoAdmin:false,canWrite:true,
+  cliLoaded:false,client:null,myOrders:[],statuses:{},prices:{},allClients:[],allOrders:[],
+  cart:LS.get('kd_cart',[]).filter(function(l){return l&&PM[l.pid]&&(l.mode==='d'||l.mode==='k')&&l.qty>=1}),
+  reg:{},errs:{},afterReg:'katalog',
+  co:{addr:'',date:isoDate(tomorrow),slot:SLOTS[0],pay:'cash',comment:''},
+  placed:null,sending:false,
+  adminTab:'orders',ordFilter:'all',open:{},draft:{},pf:'all',
+  cat:{custom:[],removed:[]},addOpen:false,delId:null,
+  np:{firm:FIRMS[0].k,type:TYPES[0],name:'',g:'',box:'',p:'',c:'',comp:''},
+  adm:{profile:null,loaded:false,authed:false,form:{name:'',fio:'',phone:'',login:'',pass:'',pass2:''},login:{login:'',pass:''}}
+};
+var app=document.getElementById('app'),modalEl=document.getElementById('modal'),toastEl=document.getElementById('toast'),tt=null;
+
+function saveCart(){LS.set('kd_cart',S.cart)}
+function cartCalc(){
+  var r={total:0,pieces:0,kg:0,kinds:S.cart.length,hasOff:false};
+  S.cart.forEach(function(l){
+    var p=PM[l.pid],e=eff(p),per=l.mode==='k'?p.box:1;
+    r.total+=unit(l.pid,l.mode)*l.qty;r.pieces+=per*l.qty;r.kg+=per*l.qty*p.g/1000;
+    if(e.off)r.hasOff=true;
+  });
+  return r;
+}
+function addToCart(pid,mode,qty){
+  var l=S.cart.filter(function(x){return x.pid===pid&&x.mode===mode})[0];
+  if(l)l.qty=Math.min(999,l.qty+qty);else S.cart.push({pid:pid,mode:mode,qty:qty});
+  saveCart();toast(PM[pid].name+' savatga qo\'shildi');
+}
+function toast(msg,bad){
+  toastEl.textContent=msg;toastEl.className='toast'+(bad?' bad':'');toastEl.hidden=false;
+  clearTimeout(tt);tt=setTimeout(function(){toastEl.hidden=true},3400);
+}
+function errMsg(e){return e&&e.code==='invalid_argument'?"Ruxsat yo'q yoki ma'lumot noto'g'ri. Sahifa egasidan \"Contributor\" huquqini so'rang.":"Saqlanmadi. Qayta urinib ko'ring."}
+function isAdminView(){return S.mode==='cloud'?S.isAdmin:(S.mode==='local'&&S.demoAdmin)}
+function stOf(id){return (S.statuses[id]&&S.statuses[id].s)||'new'}
+function stName(k){for(var i=0;i<ST.length;i++)if(ST[i][0]===k)return ST[i][1];return k}
+function adminOrders(){
+  var list=S.mode==='cloud'?S.allOrders:S.myOrders;
+  return list.slice().sort(function(a,b){return b.at-a.at});
+}
+function adminClients(){
+  if(S.mode==='cloud')return S.allClients.slice().sort(function(a,b){return (b.at||0)-(a.at||0)});
+  return S.client?[Object.assign({id:'me'},S.client)]:[];
+}
+function countNew(){return adminOrders().filter(function(o){return stOf(o.id)==='new'}).length}
+
+/* ---------- Saqlash (bulut yoki brauzer) ---------- */
+async function saveClient(c){
+  if(S.mode==='cloud'){await S.db.doc('clients/'+S.uid).set(c)}else{LS.set('kd_client',c)}
+  S.client=c;
+}
+async function sendOrder(o){
+  if(S.mode==='cloud'){
+    var ref=S.db.doc('orders/'+S.uid);
+    var snap=await ref.get();
+    var cur=(snap.exists&&snap.data().list)||[];
+    await ref.set({list:cur.concat([o])});
+  }else{
+    S.myOrders=S.myOrders.concat([o]);LS.set('kd_orders',S.myOrders);
+  }
+}
+async function setStatus(id,s){
+  var rec={s:s,t:Date.now()};
+  try{
+    if(S.mode==='cloud')await S.db.doc('orderStatus/'+id).set(rec);
+    else{S.statuses[id]=rec;LS.set('kd_status',S.statuses)}
+    toast('Holat: '+stName(s));render();
+  }catch(e){toast(errMsg(e),1)}
+}
+async function savePrices(){
+  var m=Object.assign({},S.prices),ids=Object.keys(S.draft);
+  for(var i=0;i<ids.length;i++){
+    var d=S.draft[ids[i]],p=toInt(d.p),c=toInt(d.c);
+    if(!p||!c){toast("Narxlar musbat son bo'lishi kerak",1);return}
+    m[ids[i]]={p:p,c:c,off:!!d.off};
+  }
+  try{
+    if(S.mode==='cloud')await S.db.doc('settings/prices').set({map:m});
+    else LS.set('kd_prices',m);
+    S.prices=m;S.draft={};toast('Narxlar saqlandi');render();
+  }catch(e){toast(errMsg(e),1)}
+}
+
+/* ---------- Ko'rinishlar ---------- */
+var ICON_CART='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6"/></svg>';
+var ICON_MARK='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="8.5" width="18" height="7" rx="3.5"/><path d="M8 8.5v7M16 8.5v7"/></svg>';
+
+function mtile(f,size){
+  return '<div class="mtile" style="--h:'+f.h+';width:'+size+'px;height:'+size+'px;font-size:'+Math.round(size*0.4)+'px" aria-hidden="true">'+esc(f.n.charAt(0))+'</div>';
+}
+function hdr(){
+  var c=cartCalc(),adm=isAdminView(),nn=adm?countNew():0;
+  var cur=S.view==='firm'?'katalog':S.view;
+  var nav=[['katalog','Katalog'],['orders','Buyurtmalarim']];
+  if(adm)nav.push(['admin','Admin'+(nn?' · '+nn:'')]);
+  var acct=S.client
+    ?'<button class="acct" data-act="go" data-v="register" title="Ma\'lumotlarni tahrirlash"><span class="av">'+esc((S.client.name||'?').replace(/^[^A-Za-z0-9А-Яа-я]+/,'').charAt(0).toUpperCase()||'?')+'</span><span class="acct-n">'+esc(S.client.name)+'</span></button>'
+    :'<button class="btn" data-act="go" data-v="register">Ro\'yxatdan o\'tish</button>';
+  return '<header class="hdr"><div class="wrap hdr-in">'
+    +'<button class="brand" data-act="go" data-v="katalog"><span class="brand-mark">'+ICON_MARK+'</span><span>Kolbasa Distribyutsiya</span></button>'
+    +'<nav class="nav" aria-label="Bo\'limlar">'+nav.map(function(n){return '<button class="'+(cur===n[0]?'on':'')+'" data-act="go" data-v="'+n[0]+'">'+esc(n[1])+'</button>'}).join('')+'</nav>'
+    +'<div class="hdr-r">'+acct
+    +'<button class="btn btn-p" data-act="go" data-v="cart" aria-label="Savat">'+ICON_CART+'<span>Savat</span>'+(c.kinds?'<span class="badge">'+c.kinds+'</span><span class="cart-sum">'+money(c.total)+'</span>':'')+'</button></div>'
+    +'</div></header>';
+}
+function modeBanner(){
+  if(S.mode!=='local')return '';
+  return '<div class="note warn"><span>Sinov rejimi: ma\'lumotlar faqat shu brauzerda saqlanadi.</span><button class="lnk" data-act="demoadmin">'+(S.demoAdmin?'Mijoz ko\'rinishiga o\'tish':'Admin ko\'rinishini ochish')+'</button></div>';
+}
+function regBanner(){
+  if(!S.cliLoaded||S.client)return '';
+  return '<div class="note"><span>Buyurtma berish uchun ChP ma\'lumotlaringizni kiriting. Katalogni ro\'yxatdan o\'tmasdan ham ko\'rish mumkin.</span><button class="btn btn-p btn-sm" data-act="regfrom" data-v="katalog">ChP sifatida ro\'yxatdan o\'tish</button></div>';
+}
+function ftile(f){
+  var list=PRODUCTS.filter(function(p){return p.firm===f.k});
+  var types=[];list.forEach(function(p){if(types.indexOf(p.type)<0)types.push(p.type)});
+  return '<button class="card ftile" data-act="firm" data-k="'+f.k+'">'+mtile(f,56)
+    +'<div><b>'+esc(f.n)+'</b><div class="meta">'+list.length+' ta mahsulot</div></div>'
+    +'<div class="cats">'+types.slice(0,3).map(function(t){return '<span class="pill">'+esc(t)+'</span>'}).join('')+(types.length>3?'<span class="pill">+'+(types.length-3)+'</span>':'')+'</div></button>';
+}
+function pcard(p){
+  var e=eff(p),f=firmOf(p.firm);
+  return '<article class="card pcard" data-act="open" data-id="'+p.id+'" tabindex="0" role="button" aria-label="'+esc(p.name)+' haqida batafsil">'
+    +'<div class="pc-top"><span class="tag">'+esc(p.type)+'</span><span class="mono muted">~'+p.g+' g</span></div>'
+    +'<div><h3>'+esc(p.name)+'</h3><div class="muted">'+esc(f.n)+'</div></div>'
+    +'<div class="prices"><div><span class="lbl">Dona</span><b>'+money(e.p)+'</b></div>'
+    +'<div class="opt"><span class="lbl">Korobka · '+p.box+' dona</span><b>'+money(e.c)+'</b><small>'+money(Math.round(e.c/p.box))+' / dona</small></div></div>'
+    +(e.off?'<div class="out">Hozir mavjud emas</div>':'<div class="pc-act"><button class="btn" data-act="add" data-id="'+p.id+'" data-mode="d">+ Dona</button><button class="btn btn-opt" data-act="add" data-id="'+p.id+'" data-mode="k">+ Korobka</button></div>')
+    +'</article>';
+}
+function katalogView(){
+  var q=S.q.trim().toLowerCase(),body;
+  if(q){
+    var list=PRODUCTS.filter(function(p){return (p.name+' '+firmOf(p.firm).n+' '+p.type).toLowerCase().indexOf(q)>=0});
+    body=list.length?'<div class="grid-p">'+list.map(pcard).join('')+'</div>':'<div class="card empty">«'+esc(S.q)+'» bo\'yicha hech narsa topilmadi.</div>';
+  }else body='<div class="grid-f">'+FIRMS.map(ftile).join('')+'</div>';
+  return '<section class="page-h"><div><h1>Katalog</h1><p class="sub">Firmani tanlang, keyin mahsulot ustiga bosib tarkibi, massasi va narxini ko\'ring.</p></div>'
+    +'<div class="search"><input id="q" class="in" type="search" placeholder="Mahsulot yoki firma nomi" value="'+esc(S.q)+'" data-bind="q" autocomplete="off" aria-label="Qidirish"></div></section>'
+    +regBanner()+body
+    +'<p class="fine">Tarkib va massa taxminiy. Aniq ma\'lumot mahsulot qadog\'ida ko\'rsatilgan.</p>';
+}
+function chip(v,label,n){
+  return '<button class="chip '+(S.type===v?'on':'')+'" data-act="type" data-t="'+esc(v)+'">'+esc(label)+'<span>'+n+'</span></button>';
+}
+function firmView(){
+  var f=firmOf(S.firm),list=PRODUCTS.filter(function(p){return p.firm===f.k}),types=[];
+  list.forEach(function(p){if(types.indexOf(p.type)<0)types.push(p.type)});
+  var shown=S.type==='all'?list:list.filter(function(p){return p.type===S.type});
+  return '<nav class="crumb" aria-label="Yo\'l"><button class="lnk" data-act="go" data-v="katalog">Katalog</button><span>/</span><b>'+esc(f.n)+'</b></nav>'
+    +'<section class="firm-h">'+mtile(f,64)+'<div><h1>'+esc(f.n)+'</h1><p class="sub" style="margin-top:2px">'+list.length+' ta mahsulot · '+types.length+' ta tur</p></div></section>'
+    +'<div class="chips">'+chip('all','Hammasi',list.length)+types.map(function(t){return chip(t,t,list.filter(function(p){return p.type===t}).length)}).join('')+'</div>'
+    +'<div class="grid-p">'+shown.map(pcard).join('')+'</div>';
+}
+function qtyBox(val,kind,i){
+  return '<div class="qty"><button data-act="'+(kind==='m'?'mq':'cq')+'" data-d="-1"'+(kind==='c'?' data-i="'+i+'"':'')+' aria-label="Kamaytirish">−</button>'
+    +'<input type="number" min="1" max="999" value="'+val+'" data-qty="'+kind+'"'+(kind==='c'?' data-i="'+i+'"':'')+' aria-label="Miqdor">'
+    +'<button data-act="'+(kind==='m'?'mq':'cq')+'" data-d="1"'+(kind==='c'?' data-i="'+i+'"':'')+' aria-label="Ko\'paytirish">+</button></div>';
+}
+function modalHtml(){
+  if(!S.modal)return '';
+  var m=S.modal,p=PM[m.id],e=eff(p),f=firmOf(p.firm);
+  var u=m.mode==='k'?e.c:e.p,perKg=Math.round(e.p/p.g*1000),save=Math.round((1-e.c/(e.p*p.box))*100);
+  return '<div class="ov" data-act="closeov"><div class="md" role="dialog" aria-modal="true" aria-labelledby="mt">'
+    +'<div class="md-h"><div class="md-t">'+mtile(f,46)+'<div style="min-width:0"><span class="tag">'+esc(p.type)+'</span><h2 id="mt">'+esc(p.name)+'</h2><div class="muted">'+esc(f.n)+'</div></div></div><button class="x modal-close" data-act="close" aria-label="Yopish">×</button></div>'
+    +'<dl class="spec">'
+    +'<div><dt>Taxminiy massa</dt><dd>~'+p.g+' g / dona</dd></div>'
+    +'<div><dt>Korobkada</dt><dd>'+p.box+' dona<small>~'+(p.g*p.box/1000).toFixed(1)+' kg</small></dd></div>'
+    +'<div><dt>Dona narxi</dt><dd>'+money(e.p)+'<small>≈ '+money(perKg)+' / kg</small></dd></div>'
+    +'<div><dt>Korobka narxi</dt><dd>'+money(e.c)+'<small>'+money(Math.round(e.c/p.box))+' / dona'+(save>0?' · '+save+'% arzon':'')+'</small></dd></div>'
+    +'</dl>'
+    +'<div><h3 class="sec">Tarkibi</h3><p style="margin-top:6px">'+esc(p.comp)+'.</p></div>'
+    +'<p class="fine">Massa va tarkib taxminiy. Aniq ma\'lumot mahsulot qadog\'ida ko\'rsatilgan.</p>'
+    +(e.off?'<div class="note bad">Hozir mavjud emas.</div>':
+      '<div class="buy"><div class="seg" role="group" aria-label="Sotuv turi"><button class="'+(m.mode==='d'?'on':'')+'" data-act="mmode" data-m="d">Dona</button><button class="'+(m.mode==='k'?'on':'')+'" data-act="mmode" data-m="k">Korobka (optom)</button></div>'+qtyBox(m.qty,'m')+'</div>'
+      +'<div class="buy-f"><div><span class="muted">Jami</span><b class="big">'+money(u*m.qty)+'</b></div><button class="btn btn-p btn-lg" data-act="addm">Savatga qo\'shish</button></div>')
+    +'</div></div>';
+}
+function summary(step){
+  var c=cartCalc();
+  var btn=step==='cart'
+    ?'<button class="btn btn-p btn-lg" data-act="tocheckout"'+(c.kinds&&!c.hasOff?'':' disabled')+'>Buyurtmaga o\'tish</button>'
+    :'<button class="btn btn-p btn-lg" data-act="submit"'+(c.kinds&&!c.hasOff&&!S.sending?'':' disabled')+'>'+(S.sending?'Yuborilmoqda…':'Buyurtmani yuborish')+'</button>';
+  return '<aside class="card sumbox"><h3>Buyurtma xulosasi</h3><dl>'
+    +'<div><dt>Mahsulot turlari</dt><dd>'+c.kinds+'</dd></div>'
+    +'<div><dt>Jami dona</dt><dd>'+c.pieces+'</dd></div>'
+    +'<div><dt>Taxminiy og\'irlik</dt><dd>~'+c.kg.toFixed(1)+' kg</dd></div>'
+    +'<div class="tot"><dt>Jami</dt><dd>'+money(c.total)+'</dd></div></dl>'+btn
+    +(c.hasOff?'<p class="err">Savatda mavjud bo\'lmagan mahsulot bor.</p>':'')+'</aside>';
+}
+function cartView(){
+  if(!S.cart.length)return '<h1>Savat</h1><div class="card empty"><p>Savat hozircha bo\'sh.</p><button class="btn btn-p" data-act="go" data-v="katalog">Katalogga o\'tish</button></div>';
+  var rows=S.cart.map(function(l,i){
+    var p=PM[l.pid],f=firmOf(p.firm),e=eff(p),u=unit(l.pid,l.mode);
+    return '<div class="card line"><div class="ln-main"><span class="tag">'+esc(f.n)+'</span><b>'+esc(p.name)+'</b>'
+      +'<span class="muted">~'+p.g+' g'+(l.mode==='k'?' · korobka: '+p.box+' dona, ~'+(p.g*p.box/1000).toFixed(1)+' kg':' · dona')+'</span>'
+      +(e.off?'<span class="err">Hozir mavjud emas. Savatdan olib tashlang.</span>':'')+'</div>'
+      +'<div class="ln-ctl"><div class="seg" role="group" aria-label="Sotuv turi"><button class="'+(l.mode==='d'?'on':'')+'" data-act="cmode" data-i="'+i+'" data-m="d">Dona</button><button class="'+(l.mode==='k'?'on':'')+'" data-act="cmode" data-i="'+i+'" data-m="k">Korobka</button></div>'+qtyBox(l.qty,'c',i)+'</div>'
+      +'<div class="ln-sum"><span class="muted">'+money(u)+' × '+l.qty+'</span><b>'+money(u*l.qty)+'</b></div>'
+      +'<button class="x" data-act="crm" data-i="'+i+'" aria-label="Olib tashlash">×</button></div>';
+  }).join('');
+  return '<h1>Savat</h1><div class="split"><div class="stack">'+rows+'<button class="lnk" style="align-self:flex-start" data-act="go" data-v="katalog">Xaridni davom ettirish</button></div>'+summary('cart')+'</div>';
+}
+function field(id,label,val,opts){
+  opts=opts||{};var er=opts.err;
+  return '<div class="field'+(opts.full?' full':'')+'"><label for="'+id+'">'+esc(label)+'</label>'
+    +'<input id="'+id+'" class="in'+(er?' bad':'')+'" type="'+(opts.type||'text')+'" value="'+esc(val)+'" data-bind="'+opts.bind+'"'
+    +(opts.ph?' placeholder="'+esc(opts.ph)+'"':'')+(opts.mode?' inputmode="'+opts.mode+'"':'')+(opts.max?' maxlength="'+opts.max+'"':'')+(opts.min?' min="'+opts.min+'"':'')+' autocomplete="off">'
+    +(er?'<span class="err">'+esc(er)+'</span>':(opts.hint?'<span class="hint">'+esc(opts.hint)+'</span>':''))+'</div>';
+}
+function regForm(){
+  var r=S.reg,e=S.errs;
+  return '<div class="card form"><div class="fgrid">'
+    +field('r-name','Korxona (ChP) nomi',r.name,{bind:'reg.name',err:e.name,ph:'ChP «Nomi»',full:true})
+    +field('r-dir','Rahbar F.I.O.',r.dir,{bind:'reg.dir',err:e.dir})
+    +field('r-stir','STIR (INN)',r.stir,{bind:'reg.stir',err:e.stir,mode:'numeric',max:9,ph:'9 ta raqam'})
+    +field('r-phone','Telefon',r.phone,{bind:'reg.phone',err:e.phone,type:'tel',ph:'+998 90 123 45 67'})
+    +'<div class="field"><label for="r-biz">Faoliyat turi</label><select id="r-biz" class="in" data-bind="reg.biz">'+BIZ.map(function(b){return '<option'+(r.biz===b?' selected':'')+'>'+esc(b)+'</option>'}).join('')+'</select></div>'
+    +field('r-addr','Manzil (do\'kon yoki ombor)',r.addr,{bind:'reg.addr',err:e.addr,full:true,ph:'Shahar, tuman, ko\'cha, uy, mo\'ljal',hint:'Yetkazish manzili sifatida avtomatik to\'ldiriladi.'})
+    +'</div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-p btn-lg" data-act="regsave">'+(S.client?'Saqlash':'Ro\'yxatdan o\'tish')+'</button>'
+    +(S.client?'<button class="btn btn-lg" data-act="go" data-v="katalog">Bekor qilish</button>':'')+'</div></div>';
+}
+function registerView(){
+  return '<section><h1>'+(S.client?'Ma\'lumotlarim':'ChP sifatida ro\'yxatdan o\'tish')+'</h1><p class="sub">'+(S.client?'Korxona ma\'lumotlarini yangilashingiz mumkin.':'Buyurtmalar korxonangiz nomiga rasmiylashtiriladi. Admin ro\'yxatdan o\'tgan mijozlar va ularning buyurtmalarini ko\'radi.')+'</p></section>'+regForm();
+}
+function checkoutView(){
+  if(!S.cliLoaded)return '<h1>Buyurtma</h1><div class="card empty">Yuklanmoqda…</div>';
+  if(!S.client)return '<h1>Buyurtma</h1><div class="card empty"><p>Buyurtma berish uchun avval ChP ma\'lumotlarini kiriting.</p><button class="btn btn-p" data-act="regfrom" data-v="checkout">Ro\'yxatdan o\'tish</button></div>';
+  if(!S.cart.length)return '<h1>Buyurtma</h1><div class="card empty"><p>Savat bo\'sh.</p><button class="btn btn-p" data-act="go" data-v="katalog">Katalogga o\'tish</button></div>';
+  var c=S.client,co=S.co,e=S.errs,today=isoDate(new Date());
+  return '<nav class="crumb"><button class="lnk" data-act="go" data-v="cart">Savat</button><span>/</span><b>Buyurtma</b></nav><h1>Buyurtmani rasmiylashtirish</h1>'
+    +(S.canWrite?'':'<div class="note bad">Sizda buyurtma yuborish huquqi yo\'q. Sahifa egasidan "Contributor" huquqini so\'rang.</div>')
+    +'<div class="split"><div class="stack">'
+    +'<section class="card mini"><div><span class="lab">Mijoz</span><div><b>'+esc(c.name)+'</b></div><div class="muted">STIR <span class="mono">'+esc(c.stir)+'</span> · '+esc(c.dir)+' · '+esc(c.phone)+'</div></div><button class="btn btn-sm" data-act="regfrom" data-v="checkout">Tahrirlash</button></section>'
+    +'<section class="card form"><h2>Yetkazish</h2><div class="fgrid">'
+    +field('c-addr','Yetkazish manzili',co.addr,{bind:'co.addr',err:e.addr,full:true,ph:'Shahar, tuman, ko\'cha, uy, mo\'ljal'})
+    +field('c-date','Yetkazish sanasi',co.date,{bind:'co.date',type:'date',min:today,err:e.date})
+    +'<div class="field"><label for="c-slot">Vaqti</label><select id="c-slot" class="in" data-bind="co.slot">'+SLOTS.map(function(s){return '<option'+(co.slot===s?' selected':'')+'>'+s+'</option>'}).join('')+'</select></div>'
+    +'</div></section>'
+    +'<section class="card form"><h2>To\'lov turi</h2><div class="pays" role="radiogroup" aria-label="To\'lov turi">'
+    +PAY.map(function(p){return '<label class="payopt'+(co.pay===p[0]?' on':'')+'"><input type="radio" name="pay" value="'+p[0]+'" data-bind="co.pay"'+(co.pay===p[0]?' checked':'')+'><div><b>'+esc(p[1])+'</b><span>'+esc(p[2])+'</span></div></label>'}).join('')
+    +'</div></section>'
+    +'<section class="card form"><h2>Izoh</h2><div class="field"><label for="c-note" class="muted" style="font-weight:400">Admin uchun qo\'shimcha ma\'lumot (ixtiyoriy)</label><textarea id="c-note" class="in" data-bind="co.comment" placeholder="Masalan: ertalab soat 9 dan keyin, orqa eshikdan">'+esc(co.comment)+'</textarea></div></section>'
+    +'</div>'+summary('checkout')+'</div>';
+}
+function doneView(){
+  var o=S.placed;if(!o)return '';
+  return '<div class="card done"><div class="ok"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>'
+    +'<h1>Buyurtma qabul qilindi</h1><p>Buyurtma raqami: <b class="mono">'+esc(o.no)+'</b></p>'
+    +'<p class="muted">Yetkazish: '+fmtD(o.date)+', '+esc(o.slot)+'. To\'lov: '+esc(payName(o.pay))+'. Jami: <b>'+money(o.total)+'</b>.</p>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-p" data-act="go" data-v="orders">Buyurtmalarim</button><button class="btn" data-act="go" data-v="katalog">Katalogga qaytish</button></div></div>';
+}
+function linesTable(o){
+  return '<div class="tw"><table><thead><tr><th>Mahsulot</th><th>Turi</th><th class="r">Narx</th><th class="r">Miqdor</th><th class="r">Summa</th></tr></thead><tbody>'
+    +o.lines.map(function(l){return '<tr><td><b>'+esc(l.name)+'</b><div class="muted">'+esc(l.firm)+'</div></td><td>'+(l.mode==='k'?'Korobka ('+l.box+' dona)':'Dona')+'</td><td class="r">'+money(l.price)+'</td><td class="r">'+l.qty+'</td><td class="r">'+money(l.price*l.qty)+'</td></tr>'}).join('')
+    +'</tbody></table></div>';
+}
+function myOrdersView(){
+  var list=S.myOrders.slice().sort(function(a,b){return b.at-a.at});
+  var body=list.length?'<div class="stack">'+list.map(function(o){return orderCard(o,false)}).join('')+'</div>'
+    :'<div class="card empty"><p>Hozircha buyurtmalar yo\'q.</p><button class="btn btn-p" data-act="go" data-v="katalog">Katalogga o\'tish</button></div>';
+  return '<h1>Buyurtmalarim</h1>'+body;
+}
+function orderCard(o,adm){
+  var s=stOf(o.id),isOpen=!!S.open[o.id];
+  var head='<summary data-act="otoggle" data-id="'+o.id+'"><div><b class="mono">'+esc(o.no)+'</b>'+(adm?' · '+esc(o.client.name):'')+'<div class="muted">Yetkazish: '+fmtD(o.date)+', '+esc(o.slot)+' · yaratildi '+fmtT(o.at)+'</div></div>'
+    +'<div style="text-align:right"><span class="st st-'+s+'">'+esc(stName(s))+'</span><div class="num"><b>'+money(o.total)+'</b></div></div></summary>';
+  var info='<dl class="o-info">'
+    +'<div><dt>Mijoz</dt><dd>'+esc(o.client.name)+'<br><span class="muted">'+esc(o.client.dir)+'</span></dd></div>'
+    +'<div><dt>STIR / telefon</dt><dd><span class="mono">'+esc(o.client.stir)+'</span><br>'+esc(o.client.phone)+'</dd></div>'
+    +'<div><dt>Yetkazish manzili</dt><dd>'+esc(o.addr)+'</dd></div>'
+    +'<div><dt>To\'lov turi</dt><dd>'+esc(payName(o.pay))+'</dd></div>'
+    +(o.comment?'<div><dt>Izoh</dt><dd>'+esc(o.comment)+'</dd></div>':'')+'</dl>';
+  var ctl=adm?'<div class="field" style="max-width:260px"><label for="s-'+o.id+'">Holatni o\'zgartirish</label><select id="s-'+o.id+'" class="in" data-status="'+o.id+'">'+ST.map(function(x){return '<option value="'+x[0]+'"'+(s===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select></div>':'';
+  return '<details class="card ord"'+(isOpen?' open':'')+'>'+head+'<div class="o-body">'+info+linesTable(o)+ctl+'</div></details>';
+}
+function adminRegView(){
+  var f=S.adm.form,e=S.errs;
+  return '<section><h1>Admin ro\'yxatdan o\'tishi</h1><p class="sub">Distribyutor sifatida bir marta ro\'yxatdan o\'ting. Keyin admin bo\'limiga login va parol bilan kirasiz.</p></section>'
+    +'<div class="card form"><div class="fgrid">'
+    +field('a-name','Distribyutor (kompaniya) nomi',f.name,{bind:'adm.form.name',err:e.name,full:true})
+    +field('a-fio','F.I.O.',f.fio,{bind:'adm.form.fio',err:e.fio})
+    +field('a-phone','Telefon',f.phone,{bind:'adm.form.phone',type:'tel',err:e.phone,ph:'+998 90 123 45 67'})
+    +field('a-login','Login',f.login,{bind:'adm.form.login',err:e.login,hint:'Kamida 4 belgi'})
+    +field('a-pass','Parol',f.pass,{bind:'adm.form.pass',type:'password',err:e.pass,hint:'Kamida 6 belgi'})
+    +field('a-pass2','Parolni takrorlang',f.pass2,{bind:'adm.form.pass2',type:'password',err:e.pass2})
+    +'</div><div><button class="btn btn-p btn-lg" data-act="admreg">Ro\'yxatdan o\'tish</button></div></div>';
+}
+function adminLoginView(){
+  var l=S.adm.login,e=S.errs;
+  return '<section><h1>Admin kirishi</h1><p class="sub">'+esc(S.adm.profile.name)+'</p></section>'
+    +'<div class="card form" style="max-width:460px"><div class="stack" style="gap:14px">'
+    +field('l-login','Login',l.login,{bind:'adm.login.login',err:e.login})
+    +field('l-pass','Parol',l.pass,{bind:'adm.login.pass',type:'password'})
+    +'</div><div><button class="btn btn-p btn-lg" data-act="admlogin">Kirish</button></div></div>';
+}
+function adminView(){
+  if(!isAdminView())return '<div class="card empty">Bu bo\'lim faqat admin uchun.</div>';
+  if(!S.adm.loaded)return '<h1>Admin</h1><div class="card empty">Yuklanmoqda…</div>';
+  if(!S.adm.profile)return adminRegView();
+  if(!S.adm.authed)return adminLoginView();
+  var tabs=[['orders','Buyurtmalar'],['clients','Mijozlar'],['prices','Tovarlar va narxlar']];
+  var h='<section class="page-h"><div><h1>Admin</h1><p class="sub">'+esc(S.adm.profile.name)+' · '+esc(S.adm.profile.fio)+'</p></div><button class="btn" data-act="admout">Chiqish</button></section>'
+    +'<div class="chips" role="tablist">'+tabs.map(function(t){return '<button class="chip'+(S.adminTab===t[0]?' on':'')+'" role="tab" aria-selected="'+(S.adminTab===t[0])+'" data-act="atab" data-t="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div>';
+  if(S.adminTab==='clients')return h+adminClientsView();
+  if(S.adminTab==='prices')return h+adminPricesView();
+  return h+adminOrdersView();
+}
+function adminOrdersView(){
+  var all=adminOrders(),today=isoDate(new Date());
+  var nNew=all.filter(function(o){return stOf(o.id)==='new'}).length;
+  var tdy=all.filter(function(o){var s=stOf(o.id);return o.date===today&&s!=='cancel'&&s!=='done'}).length;
+  var active=all.filter(function(o){var s=stOf(o.id);return s==='new'||s==='ok'||s==='way'}).reduce(function(a,o){return a+o.total},0);
+  var f=S.ordFilter,shown=f==='all'?all:all.filter(function(o){return stOf(o.id)===f});
+  var stats='<div class="stats"><div class="card stat"><b>'+nNew+'</b><span>Yangi buyurtmalar</span></div><div class="card stat"><b>'+tdy+'</b><span>Bugun yetkaziladi</span></div><div class="card stat"><b>'+money(active)+'</b><span>Faol buyurtmalar summasi</span></div></div>';
+  var chips='<div class="chips"><button class="chip'+(f==='all'?' on':'')+'" data-act="ofilter" data-t="all">Hammasi<span>'+all.length+'</span></button>'
+    +ST.map(function(x){var n=all.filter(function(o){return stOf(o.id)===x[0]}).length;return '<button class="chip'+(f===x[0]?' on':'')+'" data-act="ofilter" data-t="'+x[0]+'">'+x[1]+'<span>'+n+'</span></button>'}).join('')+'</div>';
+  var list=shown.length?'<div class="stack">'+shown.map(function(o){return orderCard(o,true)}).join('')+'</div>':'<div class="card empty">Bu bo\'limda buyurtmalar yo\'q.</div>';
+  return stats+chips+list;
+}
+function adminClientsView(){
+  var cl=adminClients(),ords=adminOrders();
+  if(!cl.length)return '<div class="card empty">Hali hech kim ro\'yxatdan o\'tmagan.</div>';
+  return '<div class="card tw"><table><thead><tr><th>Korxona (ChP)</th><th>Rahbar</th><th>STIR</th><th>Telefon</th><th>Manzil</th><th class="r">Buyurtmalar</th><th class="r">Jami summa</th></tr></thead><tbody>'
+    +cl.map(function(c){
+      var mine=ords.filter(function(o){return S.mode==='cloud'?o.cid===c.id:true});
+      var sum=mine.filter(function(o){return stOf(o.id)!=='cancel'}).reduce(function(a,o){return a+o.total},0);
+      return '<tr><td><b>'+esc(c.name)+'</b><div class="muted">'+esc(c.biz||'')+(c.at?' · '+fmtT(c.at):'')+'</div></td><td>'+esc(c.dir)+'</td><td class="mono">'+esc(c.stir)+'</td><td>'+esc(c.phone)+'</td><td>'+esc(c.addr)+'</td><td class="r">'+mine.length+'</td><td class="r">'+money(sum)+'</td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+function addForm(){
+  var n=S.np,e=S.errs;
+  return '<div class="card addbox"><h2>Yangi tovar</h2><div class="fgrid">'
+    +'<div class="field"><label for="n-firm">Firma</label><select id="n-firm" class="in" data-bind="np.firm">'+FIRMS.map(function(f){return '<option value="'+f.k+'"'+(n.firm===f.k?' selected':'')+'>'+esc(f.n)+'</option>'}).join('')+'</select></div>'
+    +'<div class="field"><label for="n-type">Turi</label><select id="n-type" class="in" data-bind="np.type">'+TYPES.map(function(t){return '<option'+(n.type===t?' selected':'')+'>'+esc(t)+'</option>'}).join('')+'</select></div>'
+    +field('n-name','Tovar nomi',n.name,{bind:'np.name',err:e.name,full:true})
+    +field('n-g','Taxminiy massa (g / dona)',n.g,{bind:'np.g',mode:'numeric',err:e.g})
+    +field('n-box','Korobkada necha dona',n.box,{bind:'np.box',mode:'numeric',err:e.box})
+    +field('n-p','Dona narxi (so\'m)',n.p,{bind:'np.p',mode:'numeric',err:e.p})
+    +field('n-c','Korobka narxi (so\'m)',n.c,{bind:'np.c',mode:'numeric',err:e.c,hint:'Bo\'sh qoldirsangiz dona narxidan 5% arzon hisoblanadi'})
+    +'<div class="field full"><label for="n-comp">Tarkibi</label><textarea id="n-comp" class="in" data-bind="np.comp" placeholder="Masalan: mol go\'shti, tuz, ziravorlar">'+esc(n.comp)+'</textarea></div>'
+    +'</div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-p btn-lg" data-act="addprod">Qo\'shish</button><button class="btn btn-lg" data-act="addtoggle">Bekor qilish</button></div></div>';
+}
+function adminPricesView(){
+  var list=S.pf==='all'?PRODUCTS:PRODUCTS.filter(function(p){return p.firm===S.pf});
+  var n=Object.keys(S.draft).length;
+  var rows=list.map(function(p){
+    var d=S.draft[p.id],e=eff(p);
+    var pv=d?d.p:String(e.p),cv=d?d.c:String(e.c),off=d?d.off:e.off;
+    var del=S.delId===p.id
+      ?'<button class="btn btn-sm btn-del" data-act="delconfirm" data-id="'+p.id+'">Tasdiqlash</button> <button class="btn btn-sm" data-act="delcancel">Bekor</button>'
+      :'<button class="btn btn-sm btn-del" data-act="delask" data-id="'+p.id+'">O\'chirish</button>';
+    return '<tr><td><b>'+esc(p.name)+'</b><div class="muted">'+esc(firmOf(p.firm).n)+' · ~'+p.g+' g · korobka '+p.box+' dona</div></td>'
+      +'<td class="r"><input id="pp-'+p.id+'" class="in sm" inputmode="numeric" value="'+esc(pv)+'" data-bind="draft.'+p.id+'.p" aria-label="Dona narxi"></td>'
+      +'<td class="r"><input id="pc-'+p.id+'" class="in sm" inputmode="numeric" value="'+esc(cv)+'" data-bind="draft.'+p.id+'.c" aria-label="Korobka narxi"></td>'
+      +'<td><label style="display:flex;gap:6px;align-items:center;white-space:nowrap"><input type="checkbox" data-bind="draft.'+p.id+'.off"'+(off?' checked':'')+'> Mavjud emas</label></td>'
+      +'<td style="white-space:nowrap">'+del+'</td></tr>';
+  }).join('');
+  var gone=BASE.filter(function(p){return S.cat.removed.indexOf(p.id)>=0});
+  var goneHtml=gone.length?'<div class="card form"><h3>O\'chirilgan tovarlar</h3><div class="stack" style="gap:8px">'+gone.map(function(p){return '<div style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span><b>'+esc(p.name)+'</b> <span class="muted">· '+esc(firmOf(p.firm).n)+'</span></span><button class="btn btn-sm" data-act="restore" data-id="'+p.id+'">Qaytarish</button></div>'}).join('')+'</div></div>':'';
+  return '<div class="note warn"><span>Namunaviy narxlar o\'rniga o\'z narxlaringizni kiriting va «Saqlash» tugmasini bosing.</span></div>'
+    +'<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between">'
+    +'<div class="field" style="min-width:200px"><label for="pf" class="muted" style="font-weight:500">Firma</label><select id="pf" class="in" data-bind="pf"><option value="all">Barcha firmalar</option>'+FIRMS.map(function(f){return '<option value="'+f.k+'"'+(S.pf===f.k?' selected':'')+'>'+esc(f.n)+'</option>'}).join('')+'</select></div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-lg" data-act="addtoggle">'+(S.addOpen?'Yopish':'+ Tovar qo\'shish')+'</button>'
+    +'<button class="btn btn-p btn-lg" data-act="saveprices"'+(n?'':' disabled')+'>Saqlash'+(n?' ('+n+')':'')+'</button></div></div>'
+    +(S.addOpen?addForm():'')
+    +'<div class="card tw"><table><thead><tr><th>Mahsulot</th><th class="r">Dona narxi</th><th class="r">Korobka narxi</th><th>Holat</th><th>Amal</th></tr></thead><tbody>'+(rows||'<tr><td colspan="5" class="muted">Tovar yo\'q.</td></tr>')+'</tbody></table></div>'
+    +goneHtml;
+}
+function viewHtml(){
+  switch(S.view){
+    case 'firm':return firmView();
+    case 'cart':return cartView();
+    case 'checkout':return checkoutView();
+    case 'register':return registerView();
+    case 'orders':return myOrdersView();
+    case 'admin':return adminView();
+    case 'done':return doneView();
+    default:return katalogView();
+  }
+}
+
+/* ---------- Chizish ---------- */
+function render(){
+  var act=document.activeElement,fid=null,ss=null,se=null;
+  if(act&&act.id&&app.contains(act)){fid=act.id;try{ss=act.selectionStart;se=act.selectionEnd}catch(e){}}
+  app.innerHTML=hdr()+'<main class="wrap">'+modeBanner()+viewHtml()+'</main>';
+  modalEl.innerHTML=modalHtml();
+  document.body.style.overflow=S.modal?'hidden':'';
+  if(fid){
+    var el=document.getElementById(fid);
+    if(el){el.focus();try{if(ss!=null)el.setSelectionRange(ss,se)}catch(e){}}
+  }
+}
+function go(v){
+  S.view=v;S.modal=null;S.errs={};
+  if(v==='katalog'){S.firm=null;S.type='all'}
+  if(v==='register'){S.reg=Object.assign({name:'',dir:'',stir:'',phone:'',addr:'',biz:BIZ[0]},S.client||{})}
+  if(v==='checkout'&&S.client&&!S.co.addr)S.co.addr=S.client.addr||'';
+  window.scrollTo(0,0);render();
+}
+function focusClose(){var b=document.querySelector('.modal-close');if(b)b.focus()}
+
+/* ---------- Amallar ---------- */
+function regSave(){
+  var r=S.reg,er={};
+  if((r.name||'').trim().length<2)er.name='Korxona nomini kiriting';
+  if((r.dir||'').trim().length<3)er.dir='Rahbar F.I.O. ni kiriting';
+  if(!/^\d{9}$/.test(String(r.stir||'').replace(/\D/g,'')))er.stir='STIR 9 ta raqamdan iborat';
+  var ph=phoneDigits(r.phone);
+  if(ph.length!==9)er.phone='Telefon raqamini to\'liq kiriting: +998 XX XXX XX XX';
+  if((r.addr||'').trim().length<5)er.addr='Manzilni kiriting';
+  S.errs=er;
+  if(Object.keys(er).length){render();return}
+  var c={name:r.name.trim(),dir:r.dir.trim(),stir:String(r.stir).replace(/\D/g,''),phone:phoneFmt(ph),addr:r.addr.trim(),biz:r.biz||BIZ[0],at:(S.client&&S.client.at)||Date.now()};
+  saveClient(c).then(function(){
+    toast('Ma\'lumotlar saqlandi');
+    var nx=S.afterReg||'katalog';S.afterReg='katalog';go(nx);
+  }).catch(function(e){toast(errMsg(e),1)});
+}
+function submitOrder(){
+  var co=S.co,er={},today=isoDate(new Date());
+  if((co.addr||'').trim().length<5)er.addr='Yetkazish manzilini kiriting';
+  if(!co.date||co.date<today)er.date='Bugundan oldingi sanani tanlab bo\'lmaydi';
+  S.errs=er;
+  if(Object.keys(er).length){render();return}
+  var c=cartCalc();if(!c.kinds||c.hasOff)return;
+  var now=Date.now(),d=new Date(now);
+  var o={
+    id:'o'+now.toString(36)+Math.random().toString(36).slice(2,5),
+    no:'B-'+String(d.getFullYear()).slice(2)+pad(d.getMonth()+1)+pad(d.getDate())+'-'+Math.random().toString(36).slice(2,6).toUpperCase(),
+    at:now,
+    client:{name:S.client.name,dir:S.client.dir,stir:S.client.stir,phone:S.client.phone},
+    addr:co.addr.trim(),date:co.date,slot:co.slot,pay:co.pay,comment:(co.comment||'').trim(),
+    lines:S.cart.map(function(l){var p=PM[l.pid];return {pid:l.pid,name:p.name,firm:firmOf(p.firm).n,mode:l.mode,qty:l.qty,box:p.box,price:unit(l.pid,l.mode)}}),
+    total:c.total
+  };
+  S.sending=true;render();
+  sendOrder(o).then(function(){
+    S.sending=false;S.cart=[];saveCart();S.placed=o;S.co.comment='';go('done');
+  }).catch(function(e){S.sending=false;toast(errMsg(e),1);render()});
+}
+
+async function hashPass(salt,pass){
+  var s=salt+':'+pass;
+  try{
+    var d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+    return Array.prototype.map.call(new Uint8Array(d),function(x){return ('0'+x.toString(16)).slice(-2)}).join('');
+  }catch(e){
+    var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;
+    return 'x'+(h>>>0).toString(16);
+  }
+}
+async function admRegister(){
+  var f=S.adm.form,er={};
+  if((f.name||'').trim().length<2)er.name='Kompaniya nomini kiriting';
+  if((f.fio||'').trim().length<3)er.fio='F.I.O. ni kiriting';
+  var ph=phoneDigits(f.phone);
+  if(ph.length!==9)er.phone='Telefon raqamini to\'liq kiriting: +998 XX XXX XX XX';
+  if((f.login||'').trim().length<4)er.login='Login kamida 4 belgi bo\'lsin';
+  if((f.pass||'').length<6)er.pass='Parol kamida 6 belgi bo\'lsin';
+  else if(f.pass!==f.pass2)er.pass2='Parollar bir xil emas';
+  S.errs=er;
+  if(Object.keys(er).length){render();return}
+  var salt=Math.random().toString(36).slice(2,10);
+  var prof={name:f.name.trim(),fio:f.fio.trim(),phone:phoneFmt(ph),login:f.login.trim().toLowerCase(),salt:salt,hash:await hashPass(salt,f.pass),at:Date.now()};
+  try{
+    if(S.mode==='cloud')await S.db.doc('admin/profile').set(prof);else LS.set('kd_admin',prof);
+    S.adm.profile=prof;S.adm.authed=true;S.adm.form={name:'',fio:'',phone:'',login:'',pass:'',pass2:''};S.errs={};
+    toast('Admin ro\'yxatdan o\'tdi');render();
+  }catch(e){toast(errMsg(e),1)}
+}
+async function admLogin(){
+  var l=S.adm.login,p=S.adm.profile;
+  var h=await hashPass(p.salt,l.pass||'');
+  if((l.login||'').trim().toLowerCase()===p.login&&h===p.hash){
+    S.adm.authed=true;S.adm.login={login:'',pass:''};S.errs={};render();
+  }else{S.errs={login:'Login yoki parol noto\'g\'ri'};render()}
+}
+function applyCatalog(cat){
+  S.cat={custom:(cat&&cat.custom)||[],removed:(cat&&cat.removed)||[]};
+  rebuild(S.cat);
+  var n=S.cart.length;
+  S.cart=S.cart.filter(function(l){return PM[l.pid]});
+  if(S.cart.length!==n)saveCart();
+  if(S.modal&&!PM[S.modal.id])S.modal=null;
+}
+async function saveCatalog(cat){
+  try{
+    if(S.mode==='cloud')await S.db.doc('settings/catalog').set(cat);else LS.set('kd_catalog',cat);
+    applyCatalog(cat);render();return true;
+  }catch(e){toast(errMsg(e),1);return false}
+}
+async function addProduct(){
+  var n=S.np,er={};
+  if((n.name||'').trim().length<2)er.name='Tovar nomini kiriting';
+  var g=toInt(n.g),box=toInt(n.box),p=toInt(n.p),c=toInt(n.c);
+  if(!g)er.g='Massani gramm hisobida kiriting';
+  if(!box)er.box='Korobkadagi donalar sonini kiriting';
+  if(!p)er.p='Dona narxini kiriting';
+  S.errs=er;
+  if(Object.keys(er).length){render();return}
+  var prod={id:'x'+Date.now().toString(36),firm:n.firm,type:n.type,name:n.name.trim(),g:g,box:box,p:p,comp:((n.comp||'').trim().replace(/\.+$/,''))||'Tarkibi kiritilmagan'};
+  if(c)prod.cb=c;
+  var ok=await saveCatalog({custom:S.cat.custom.concat([prod]),removed:S.cat.removed});
+  if(ok){toast('Tovar qo\'shildi');S.np=Object.assign({},S.np,{name:'',g:'',box:'',p:'',c:'',comp:''});S.addOpen=false;S.errs={};render()}
+}
+async function removeProduct(id){
+  var isCustom=S.cat.custom.some(function(x){return x.id===id});
+  var cat=isCustom
+    ?{custom:S.cat.custom.filter(function(x){return x.id!==id}),removed:S.cat.removed}
+    :{custom:S.cat.custom,removed:S.cat.removed.concat([id])};
+  S.delId=null;delete S.draft[id];
+  if(await saveCatalog(cat))toast('Tovar o\'chirildi');
+}
+async function restoreProduct(id){
+  var ok=await saveCatalog({custom:S.cat.custom,removed:S.cat.removed.filter(function(x){return x!==id})});
+  if(ok)toast('Tovar qaytarildi');
+}
+
+document.addEventListener('click',function(e){
+  var el=e.target.closest&&e.target.closest('[data-act]');if(!el)return;
+  var a=el.dataset.act,d=el.dataset;
+  switch(a){
+    case 'go':go(d.v);break;
+    case 'regfrom':S.afterReg=d.v;go('register');break;
+    case 'firm':S.firm=d.k;S.type='all';S.view='firm';window.scrollTo(0,0);render();break;
+    case 'type':S.type=d.t;render();break;
+    case 'open':S.modal={id:d.id,mode:'d',qty:1};render();focusClose();break;
+    case 'close':S.modal=null;render();break;
+    case 'closeov':if(e.target===el){S.modal=null;render()}break;
+    case 'mmode':S.modal.mode=d.m;render();break;
+    case 'mq':S.modal.qty=clamp(S.modal.qty+parseInt(d.d,10));render();break;
+    case 'addm':addToCart(S.modal.id,S.modal.mode,S.modal.qty);S.modal=null;render();break;
+    case 'add':addToCart(d.id,d.mode,1);render();break;
+    case 'cmode':S.cart[+d.i].mode=d.m;saveCart();render();break;
+    case 'cq':S.cart[+d.i].qty=clamp(S.cart[+d.i].qty+parseInt(d.d,10));saveCart();render();break;
+    case 'crm':S.cart.splice(+d.i,1);saveCart();render();break;
+    case 'tocheckout':go('checkout');break;
+    case 'submit':submitOrder();break;
+    case 'regsave':regSave();break;
+    case 'demoadmin':S.demoAdmin=!S.demoAdmin;LS.set('kd_demoadmin',S.demoAdmin);if(!S.demoAdmin&&S.view==='admin')S.view='katalog';render();break;
+    case 'atab':S.adminTab=d.t;S.errs={};S.delId=null;render();break;
+    case 'admreg':admRegister();break;
+    case 'admlogin':admLogin();break;
+    case 'admout':S.adm.authed=false;S.errs={};render();break;
+    case 'addtoggle':S.addOpen=!S.addOpen;S.errs={};render();break;
+    case 'addprod':addProduct();break;
+    case 'delask':S.delId=d.id;render();break;
+    case 'delcancel':S.delId=null;render();break;
+    case 'delconfirm':removeProduct(d.id);break;
+    case 'restore':restoreProduct(d.id);break;
+    case 'ofilter':S.ordFilter=d.t;render();break;
+    case 'otoggle':e.preventDefault();S.open[d.id]=!S.open[d.id];render();break;
+    case 'saveprices':savePrices();break;
+  }
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.bind&&e.target.dataset.bind.indexOf('adm.login')===0){e.preventDefault();admLogin();return}
+  if(e.key==='Escape'&&S.modal){S.modal=null;render();return}
+  if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('pcard')){
+    e.preventDefault();S.modal={id:e.target.dataset.id,mode:'d',qty:1};render();focusClose();
+  }
+});
+function setPath(path,val){
+  var ks=path.split('.'),o=S;
+  for(var i=0;i<ks.length-1;i++){o=o[ks[i]]||(o[ks[i]]={})}
+  o[ks[ks.length-1]]=val;
+}
+function bindSet(t,val){
+  var path=t.dataset.bind;
+  if(path.indexOf('draft.')===0){
+    var pid=path.split('.')[1];
+    if(!S.draft[pid]){var e=eff(PM[pid]);S.draft[pid]={p:String(e.p),c:String(e.c),off:e.off}}
+  }
+  setPath(path,val);
+}
+document.addEventListener('input',function(e){
+  var t=e.target;if(!t.dataset||!t.dataset.bind)return;
+  if(t.type==='radio'||t.type==='checkbox'||t.tagName==='SELECT'||t.type==='date')return;
+  bindSet(t,t.value);
+  if(t.dataset.bind==='q'||t.dataset.bind.indexOf('draft.')===0)render();
+});
+document.addEventListener('change',function(e){
+  var t=e.target;if(!t.dataset)return;
+  if(t.dataset.qty){
+    var v=clamp(t.value);
+    if(t.dataset.qty==='m')S.modal.qty=v;else{S.cart[+t.dataset.i].qty=v;saveCart()}
+    render();return;
+  }
+  if(t.dataset.status){setStatus(t.dataset.status,t.value);return}
+  if(!t.dataset.bind)return;
+  if(t.type==='checkbox')bindSet(t,t.checked);else bindSet(t,t.value);
+  render();
+});
+
+/* ---------- Ishga tushirish ---------- */
+function startLocal(){
+  S.mode='local';
+  S.client=LS.get('kd_client',null);S.myOrders=LS.get('kd_orders',[]);
+  S.statuses=LS.get('kd_status',{});S.prices=LS.get('kd_prices',{});
+  S.demoAdmin=LS.get('kd_demoadmin',false);S.cliLoaded=true;
+  S.adm.profile=LS.get('kd_admin',null);S.adm.loaded=true;
+  applyCatalog(LS.get('kd_catalog',{}));
+}
+function startCloud(db,uid,isAdmin){
+  S.mode='cloud';S.db=db;S.uid=uid;S.isAdmin=isAdmin;
+  var bad=function(){};
+  db.doc('settings/catalog').onSnapshot(function(s){applyCatalog(s.exists?s.data():{});render()},bad);
+  if(isAdmin)db.doc('admin/profile').onSnapshot(function(s){S.adm.profile=s.exists?s.data():null;S.adm.loaded=true;render()},function(){S.adm.loaded=true;render()});
+  db.doc('settings/prices').onSnapshot(function(s){S.prices=(s.exists&&s.data().map)||{};render()},bad);
+  db.doc('clients/'+uid).onSnapshot(function(s){S.client=s.exists?s.data():null;S.cliLoaded=true;render()},function(){S.cliLoaded=true;render()});
+  db.doc('orders/'+uid).onSnapshot(function(s){S.myOrders=(s.exists&&s.data().list)||[];render()},bad);
+  db.collection('orderStatus').onSnapshot(function(q){var m={};q.docs.forEach(function(d){m[d.id]=d.data()});S.statuses=m;render()},bad);
+  if(isAdmin){
+    db.collection('clients').onSnapshot(function(q){S.allClients=q.docs.map(function(d){return Object.assign({id:d.id},d.data())});render()},bad);
+    db.collection('orders').onSnapshot(function(q){
+      var all=[];q.docs.forEach(function(d){((d.data().list)||[]).forEach(function(o){all.push(Object.assign({cid:d.id},o))})});
+      S.allOrders=all;render();
+    },bad);
+  }
+}
+async function init(){
+  render();
+  var db=null,user=null;
+  try{
+    if(window.claude&&window.claude.use){
+      var r=await Promise.all([window.claude.use('db'),window.claude.use('user')]);
+      db=r[0];user=r[1];
+    }
+  }catch(e){}
+  var uid=null;
+  if(db&&user){try{uid=await user.id()}catch(e){}}
+  if(db&&user&&uid){
+    var adm=false;
+    try{adm=await user.canEdit()}catch(e){}
+    try{var cw=await user.can('data.write');S.canWrite=(cw!==false)||adm}catch(e){}
+    startCloud(db,uid,adm);
+  }else startLocal();
+  render();
+}
+init();
+})();
+</script>
+</body>
+</html>
