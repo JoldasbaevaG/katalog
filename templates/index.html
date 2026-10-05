@@ -443,7 +443,7 @@ var S={
   co:{addr:'',date:isoDate(tomorrow),slot:SLOTS[0],pay:'cash',comment:''},
   placed:null,sending:false,
   adminTab:'dash',oq:'',rp:'7',stock:{},rlog:[],pays:[],pay:{cid:'',amt:'',m:'cash',note:''},ordFilter:'all',open:{},draft:{},pf:'all',
-  cat:{custom:[],removed:[],firms:[],dists:[],fd:{}},dist:LS.get('kd_dist',null),clAuth:LS.get('kd_cl_ok',false),regTab:'reg',cl:{login:'',pass:''},thist:[],nd:{n:'',ph:'',ad:''},smsT:LS.get('kd_smst',"Hurmatli {nom}! Sizning qarzingiz {summa}. Iltimos, to'lovni amalga oshiring. Rahmat."),imgs:{},nf:{name:'',img:''},addOpen:false,delId:null,
+  cat:{custom:[],removed:[],firms:[],dists:[],fd:{}},dist:LS.get('kd_dist',null),clAuth:LS.get('kd_cl_ok',false),dscope:LS.get('kd_dscope',null),dmode:'reg',dr:{n:'',ph:'',ad:'',login:'',pass:'',pass2:''},dl:{login:'',pass:''},regTab:'reg',cl:{login:'',pass:''},thist:[],nd:{n:'',ph:'',ad:''},smsT:LS.get('kd_smst',"Hurmatli {nom}! Sizning qarzingiz {summa}. Iltimos, to'lovni amalga oshiring. Rahmat."),imgs:{},nf:{name:'',img:''},addOpen:false,delId:null,
   np:{firm:FIRMS[0].k,type:TYPES[0],sk:'d',name:'',g:'',box:'',p:'',c:'',comp:'',img:''},
   adm:{profile:null,loaded:false,authed:false,form:{name:'',fio:'',phone:'',login:'',pass:'',pass2:''},login:{login:'',pass:''}}
 };
@@ -484,6 +484,7 @@ function stOf(id){return (S.statuses[id]&&S.statuses[id].s)||'new'}
 function stName(k){for(var i=0;i<ST.length;i++)if(ST[i][0]===k)return ST[i][1];return k}
 function adminOrders(){
   var list=S.mode==='cloud'?S.allOrders:S.myOrders;
+  if(S.dscope)list=list.filter(function(o){return o.dist===S.dscope||(o.lines||[]).some(function(l){return PM[l.pid]&&distOf(PM[l.pid].firm)===S.dscope})});
   return list.slice().sort(function(a,b){return b.at-a.at});
 }
 function adminClients(){
@@ -677,10 +678,11 @@ function roleView(){
   return '<div class="wrap" style="padding-block:48px;display:flex;flex-direction:column;gap:22px;max-width:720px"><div><h1>Kolbasa Distribyutsiya</h1><p class="sub">Tizimga kim sifatida kirasiz?</p></div>'
     +'<div class="grid-role"><button class="card ftile" data-act="role" data-r="client"><span class="brand-mark">'+ICON_CART+'</span><div><b>Mijoz</b><div class="meta">Katalog, savat va buyurtmalarim</div></div></button>'
     +'<button class="card ftile" data-act="role" data-r="admin"><span class="brand-mark">'+ICON_MARK+'</span><div><b>Distribyutor (admin)</b><div class="meta">Buyurtmalar, mijozlar va narxlar</div></div></button></div>'
+    +'<div class="grid-role"><button class="card ftile" data-act="drole"><span class="brand-mark">'+ICON_MARK+'</span><div><b>Distribyutor bo\'lish</b><div class="meta">Ro\'yxatdan o\'tish yoki kirish, o\'z tovarlaringiz bilan</div></div></button></div>'
     +'<p class="fine">Sinov rejimi: ma\'lumotlar faqat shu brauzerda saqlanadi.</p></div>';
 }
 function hdr(){
-  if(isAdminView())return '<header class="hdr"><div class="wrap hdr-in"><span class="brand"><span class="brand-mark">'+ICON_MARK+'</span><span>Distribyutor paneli</span></span><div class="hdr-r"><button class="btn x-set" data-act="settings" aria-label="Sozlamalar" title="Sozlamalar">'+ICON_SET+'</button></div></div></header>';
+  if(isAdminView())return '<header class="hdr"><div class="wrap hdr-in"><span class="brand"><span class="brand-mark">'+ICON_MARK+'</span><span>'+(S.dscope&&distGet(S.dscope)?esc(distGet(S.dscope).n):'Distribyutor paneli')+'</span></span><div class="hdr-r"><button class="btn x-set" data-act="settings" aria-label="Sozlamalar" title="Sozlamalar">'+ICON_SET+'</button></div></div></header>';
   var c=cartCalc(),adm=isAdminView(),nn=adm?countNew():0;
   var cur=S.view==='firm'?'katalog':S.view;
   var un=unreadCount(),nav=[['katalog','Katalog'],['orders','Buyurtmalarim'+(un?' · '+un:'')]];
@@ -745,13 +747,19 @@ function pcard(p){
 function distList(){var d=S.cat.dists||[];return d.length?d:[{k:'main',n:'Asosiy distribyutor',ph:'',ad:''}]}
 function distOf(fk){var k=(S.cat.fd||{})[fk],L=distList();return L.some(function(d){return d.k===k})?k:L[0].k}
 function distGet(k){return distList().filter(function(d){return d.k===k})[0]}
-function dFirms(k){return FIRMS.filter(function(f){return distOf(f.k)===k})}
-function dProds(k){return PRODUCTS.filter(function(p){return distOf(p.firm)===k})}
+function isMainD(k){return k===distList()[0].k}
+function ownFirms(k){return FIRMS.filter(function(f){return distOf(f.k)===k})}
+function ownProds(k){return PRODUCTS.filter(function(p){return distOf(p.firm)===k})}
+function dFirms(k){return isMainD(k)?FIRMS:ownFirms(k)}
+function dProds(k){return isMainD(k)?PRODUCTS:ownProds(k)}
+function inDist(p,k){return isMainD(k)||distOf(p.firm)===k}
+function AF(){return S.dscope?ownFirms(S.dscope):FIRMS}
+function AP(){return S.dscope?ownProds(S.dscope):PRODUCTS}
 function hOf(nm){var h=0;for(var i=0;i<nm.length;i++)h=(h*31+nm.charCodeAt(i))%360;return h}
 function distPickView(){
   var cards=distList().map(function(d){
     return '<button class="card ftile" data-act="dist" data-k="'+esc(d.k)+'"><img class="mtile mimg" src="'+flogo({h:hOf(d.n),n:d.n})+'" alt="" style="width:56px;height:56px">'
-      +'<div><b>'+esc(d.n)+'</b><div class="meta">'+dFirms(d.k).length+' ta firma · '+dProds(d.k).length+' ta mahsulot</div>'+(d.ph?'<div class="meta">'+esc(d.ph)+'</div>':'')+(d.ad?'<div class="meta">'+esc(d.ad)+'</div>':'')+'</div>'
+      +'<div><b>'+esc(d.n)+(isMainD(d.k)?' <span class="pill">Asosiy</span>':'')+'</b><div class="meta">'+dFirms(d.k).length+' ta firma · '+dProds(d.k).length+' ta mahsulot</div>'+(d.ph?'<div class="meta">'+esc(d.ph)+'</div>':'')+(d.ad?'<div class="meta">'+esc(d.ad)+'</div>':'')+'</div>'
       +'<div class="cats"><span class="pill">Tanlash va buyurtma berish</span></div></button>';
   }).join('');
   return '<section class="page-h"><div><h1>Distribyutorlar</h1><p class="sub">Distribyutorni tanlang. Keyin uning firmalari va mahsulotlarini ko\'rib, buyurtma berasiz.</p></div></section><div class="grid-f">'+cards+'</div>';
@@ -864,12 +872,52 @@ function registerView(){
   else body=adminLoginView();
   return '<p class="tag">Kim sifatida kirasiz?</p>'+seg+body;
 }
+async function distRegister(){
+  var r=S.dr,er={},nm=(r.n||'').trim(),lg=(r.login||'').trim().toLowerCase();
+  if(nm.length<2)er.n='Distribyutor nomini kiriting';
+  else if(distList().some(function(d){return d.n.toLowerCase()===nm.toLowerCase()}))er.n='Bunday distribyutor bor';
+  if(phoneDigits(r.ph).length!==9)er.ph='Telefon raqamini to\'liq kiriting: +998 XX XXX XX XX';
+  if((r.ad||'').trim().length<5)er.ad='Manzilni kiriting';
+  if(lg.length<4||!/^[a-z0-9_.]+$/.test(lg))er.login='Login kamida 4 belgi: lotin harf va raqam';
+  else if(distList().some(function(d){return d.login===lg}))er.login='Bu login band';
+  if((r.pass||'').length<6)er.pass='Parol kamida 6 belgi bo\'lsin';
+  else if(r.pass!==r.pass2)er.pass2='Parollar bir xil emas';
+  S.errs=er;if(Object.keys(er).length){render();return}
+  var salt=Math.random().toString(36).slice(2,10),hash=await hashPass(salt,r.pass),k='d'+Date.now().toString(36);
+  var nl=distList().concat([{k:k,n:nm,ph:phoneFmt(phoneDigits(r.ph)),ad:r.ad.trim(),login:lg,salt:salt,hash:hash}]);
+  if(await saveCatalog({custom:S.cat.custom,removed:S.cat.removed,dists:nl})){
+    S.dr={n:'',ph:'',ad:'',login:'',pass:'',pass2:''};S.errs={};toast("Distribyutor sifatida ro'yxatdan o'tdingiz");
+    enterAdmin();S.dscope=k;LS.set('kd_dscope',k);S.adm.authed=true;S.adminTab='orders';render();
+  }
+}
+async function distLogin(){
+  var l=S.dl,lg=(l.login||'').trim().toLowerCase(),d=distList().filter(function(x){return x.login===lg})[0];
+  if(d&&(await hashPass(d.salt,l.pass||''))===d.hash){
+    S.dl={login:'',pass:''};S.errs={};enterAdmin();S.dscope=d.k;LS.set('kd_dscope',d.k);S.adm.authed=true;S.adminTab='orders';toast('Xush kelibsiz!');render();
+  }else{S.errs={dl:'Login yoki parol noto\'g\'ri'};render()}
+}
+function distAuthView(){
+  var r=S.dr,l=S.dl,e=S.errs,reg=S.dmode!=='login';
+  var seg='<div class="seg" role="group" aria-label="Distribyutor" style="align-self:flex-start"><button class="'+(reg?'on':'')+'" data-act="dmode" data-t="reg">Ro\'yxatdan o\'tish</button><button class="'+(!reg?'on':'')+'" data-act="dmode" data-t="login">Kirish</button></div>';
+  if(!reg)return seg+'<section><h1>Distribyutor kirishi</h1></section><div class="card form" style="max-width:460px"><div class="stack" style="gap:14px">'
+    +field('dl-l','Login',l.login,{bind:'dl.login',err:e.dl})+field('dl-p','Parol',l.pass,{bind:'dl.pass',type:'password'})
+    +'</div><div><button class="btn btn-p btn-lg" data-act="dlogin">Kirish</button></div></div>';
+  return seg+'<section><h1>Distribyutor bo\'lib ro\'yxatdan o\'tish</h1><p class="sub">Ro\'yxatdan o\'tgach, nomingiz mijozlar ko\'radigan distribyutorlar ro\'yxatida asosiy distribyutor yonida chiqadi. O\'z firma va tovarlaringizni o\'zingiz qo\'shasiz.</p></section>'
+    +'<div class="card form"><div class="fgrid">'+field('dr-n','Distribyutor nomi',r.n,{bind:'dr.n',err:e.n})+field('dr-ph','Telefon',r.ph,{bind:'dr.ph',mode:'tel',err:e.ph,ph:'+998 90 123 45 67'})+field('dr-ad','Manzil',r.ad,{bind:'dr.ad',err:e.ad,full:true})
+    +field('dr-l','Login',r.login,{bind:'dr.login',err:e.login,hint:'Kamida 4 belgi: lotin harf, raqam'})+field('dr-p','Parol',r.pass,{bind:'dr.pass',type:'password',err:e.pass,hint:'Kamida 6 belgi'})+field('dr-p2','Parolni takrorlang',r.pass2,{bind:'dr.pass2',type:'password',err:e.pass2})
+    +'</div><div><button class="btn btn-p btn-lg" data-act="dreg">Ro\'yxatdan o\'tish</button></div></div>';
+}
 function registerView0(){
   var hasAcc=!!(S.client&&S.client.login);
+  if(S.regTab==='dist'||!S.client){
+    var tab=function(t,lbl){return '<button class="'+(S.regTab===t||(t==='reg'&&S.regTab!=='login'&&S.regTab!=='dist')?'on':'')+'" data-act="rtab" data-t="'+t+'">'+lbl+'</button>'};
+    var tabs='<div class="seg" role="group" aria-label="Kirish turi" style="align-self:flex-start;margin-bottom:12px;flex-wrap:wrap">'+tab('reg','Mijoz: ro\'yxat')+tab('login','Mijoz: kirish')+tab('dist','Distribyutor')+'</div>';
+    if(S.regTab==='dist')return tabs+distAuthView();
+    if(S.regTab==='login')return tabs+clLoginView();
+    return tabs+'<section><h1>ChP sifatida ro\'yxatdan o\'tish</h1><p class="sub">Buyurtmalar korxonangiz nomiga rasmiylashtiriladi. Login va parol bilan keyin qayta kirasiz.</p></section>'+regForm();
+  }
   if(hasAcc&&!S.clAuth)return clLoginView();
-  var tabs=S.client?'':'<div class="seg" role="group" aria-label="Mijoz" style="align-self:flex-start;margin-bottom:12px"><button class="'+(S.regTab!=='login'?'on':'')+'" data-act="rtab" data-t="reg">Ro\'yxatdan o\'tish</button><button class="'+(S.regTab==='login'?'on':'')+'" data-act="rtab" data-t="login">Kirish</button></div>';
-  if(!S.client&&S.regTab==='login')return tabs+clLoginView();
-  return tabs+'<section><h1>'+(S.client?'Ma\'lumotlarim':'ChP sifatida ro\'yxatdan o\'tish')+'</h1><p class="sub">'+(S.client?'Korxona ma\'lumotlarini yangilashingiz mumkin.':'Buyurtmalar korxonangiz nomiga rasmiylashtiriladi. Login va parol bilan keyin qayta kirasiz.')+'</p></section>'+regForm()
+  return '<section><h1>Ma\'lumotlarim</h1><p class="sub">Korxona ma\'lumotlarini yangilashingiz mumkin.</p></section>'+regForm()
     +(hasAcc?'<div><button class="btn" data-act="cllogout">Hisobdan chiqish</button></div>':'');
 }
 function checkoutView(){
@@ -945,14 +993,18 @@ function adminLoginView(){
 }
 function adminView(){
   if(!isAdminView())return '<div class="card empty">Bu bo\'lim faqat admin uchun.</div>';
+  if(!S.dscope){
   if(!S.adm.loaded)return '<h1>Admin</h1><div class="card empty">Yuklanmoqda…</div>';
   if(!S.adm.profile)return adminRegView();
   if(!S.adm.authed)return adminLoginView();
+  }
   var nn=countNew(),tabs=[['dash','Boshqaruv paneli'],['orders','Buyurtmalar'+(nn?' · '+nn:'')],['clients','Mijozlar'],['prices','Tovarlar va narxlar'],['dist','Distribyutorlar'],['firms','Firmalar'],['stock','Ombor'],['pay',"To'lovlar"],['rep','Hisobotlar']];
+  if(S.dscope)tabs=tabs.filter(function(t){return ['orders','prices','firms','stock'].indexOf(t[0])>=0});
+  if(S.dscope&&['orders','prices','firms','stock'].indexOf(S.adminTab)<0)S.adminTab='orders';
   var T={dash:dashView,orders:adminOrdersView,clients:adminClientsView,prices:adminPricesView,dist:distView,firms:firmsView,stock:stockView,pay:payView,rep:repView};
   var cur=T[S.adminTab]?S.adminTab:'dash',title=tabs.filter(function(t){return t[0]===cur})[0][1].replace(/ · \d+$/,'');
   return '<div class="adm"><nav class="side" aria-label="Admin bo\'limlari">'+tabs.map(function(t){return '<button class="'+(cur===t[0]?'on':'')+'" data-act="atab" data-t="'+t[0]+'">'+esc(t[1])+'</button>'}).join('')+'<button data-act="admout" style="color:var(--bad)">Chiqish</button></nav>'
-    +'<div class="adm-c"><section class="page-h"><div><h1>'+esc(title)+'</h1><p class="sub">'+esc(S.adm.profile.name)+' · '+esc(S.adm.profile.fio)+'</p></div></section>'+T[cur]()+'</div></div>';
+    +'<div class="adm-c"><section class="page-h"><div><h1>'+esc(title)+'</h1><p class="sub">'+(S.dscope&&distGet(S.dscope)?esc(distGet(S.dscope).n)+' · '+esc(distGet(S.dscope).ph||''):esc(S.adm.profile.name)+' · '+esc(S.adm.profile.fio))+'</p></div></section>'+T[cur]()+'</div></div>';
 }
 function readImg(file,max){
   return new Promise(function(res,rej){
@@ -994,7 +1046,8 @@ async function addFirm(){
   if(FIRMS.some(function(f){return f.n.toLowerCase()===nm.toLowerCase()})){S.errs={fname:'Bunday firma bor'};render();return}
   var k='f'+Date.now().toString(36),h=0;
   for(var i=0;i<nm.length;i++)h=(h*31+nm.charCodeAt(i))%360;
-  var ok=await saveCatalog({custom:S.cat.custom,removed:S.cat.removed,firms:S.cat.firms.concat([{k:k,n:nm,h:h}])});
+  var fdn=Object.assign({},S.cat.fd||{});if(S.dscope)fdn[k]=S.dscope;
+  var ok=await saveCatalog({custom:S.cat.custom,removed:S.cat.removed,dists:distList(),fd:fdn,firms:S.cat.firms.concat([{k:k,n:nm,h:h}])});
   if(ok){
     if(n.img){var m=Object.assign({},S.imgs);m['f:'+k]=n.img;await saveImgs(m)}
     S.nf={name:'',img:''};S.errs={};toast('Firma qo\'shildi');render();
@@ -1006,11 +1059,11 @@ async function removeFirm(k){
 }
 function firmsView(){
   var n=S.nf,e=S.errs;
-  var rows=FIRMS.map(function(f){
+  var rows=AF().map(function(f){
     var cnt=PRODUCTS.filter(function(p){return p.firm===f.k}).length,custom=S.cat.firms.some(function(x){return x.k===f.k}),has=!!S.imgs['f:'+f.k];
     return '<tr><td>'+mtile(f,44)+'</td><td><b>'+esc(f.n)+'</b></td><td class="r">'+cnt+'</td>'
       +'<td style="white-space:nowrap"><label class="btn btn-sm">'+(has?'Logotipni almashtirish':'Logotip yuklash')+'<input type="file" accept="image/*" data-img="f:'+f.k+'" hidden></label>'+(has?' <button class="btn btn-sm" data-act="imgdel" data-k="f:'+f.k+'">Olib tashlash</button>':'')+'</td>'
-      +'<td><select class="in sm" data-fd="'+f.k+'" aria-label="Distribyutor">'+distList().map(function(d){return '<option value="'+esc(d.k)+'"'+(distOf(f.k)===d.k?' selected':'')+'>'+esc(d.n)+'</option>'}).join('')+'</select></td>'
+      +'<td><select class="in sm" data-fd="'+f.k+'" aria-label="Distribyutor">'+distList().filter(function(d){return !S.dscope||d.k===S.dscope}).map(function(d){return '<option value="'+esc(d.k)+'"'+(distOf(f.k)===d.k?' selected':'')+'>'+esc(d.n)+'</option>'}).join('')+'</select></td>'
       +'<td>'+(custom?'<button class="btn btn-sm btn-del" data-act="fdel" data-k="'+f.k+'">O\'chirish</button>':'')+'</td></tr>';
   }).join('');
   return '<div class="card addbox"><h2>Yangi firma</h2><div class="fgrid">'+field('f-n','Firma nomi',n.name,{bind:'nf.name',err:e.fname})
@@ -1027,7 +1080,7 @@ async function addDist(){
   if(await saveCatalog({custom:S.cat.custom,removed:S.cat.removed,dists:nl})){S.nd={n:'',ph:'',ad:''};S.errs={};toast("Distribyutor qo'shildi");render()}
 }
 async function delDist(k){
-  if(dFirms(k).length){toast("Avval firmalarni boshqa distribyutorga o'tkazing",1);return}
+  if(ownFirms(k).length){toast("Avval firmalarni boshqa distribyutorga o'tkazing",1);return}
   var nl=distList().filter(function(d){return d.k!==k});if(!nl.length)return;
   if(S.dist===k){S.dist=null;LS.set('kd_dist',null)}
   if(await saveCatalog({custom:S.cat.custom,removed:S.cat.removed,dists:nl}))toast("Distribyutor o'chirildi");
@@ -1039,7 +1092,7 @@ async function setFirmDist(fk,dk){
 function distView(){
   var n=S.nd,e=S.errs;
   var rows=distList().map(function(d){
-    return '<tr><td><b>'+esc(d.n)+'</b></td><td>'+esc(d.ph||'—')+'</td><td>'+esc(d.ad||'—')+'</td><td class="r">'+dFirms(d.k).length+'</td><td class="r">'+dProds(d.k).length+'</td><td>'+(distList().length>1?'<button class="btn btn-sm btn-del" data-act="ddel" data-k="'+esc(d.k)+'">O\'chirish</button>':'')+'</td></tr>';
+    return '<tr><td><b>'+esc(d.n)+'</b></td><td>'+esc(d.ph||'—')+'</td><td>'+esc(d.ad||'—')+'</td><td class="r">'+ownFirms(d.k).length+'</td><td class="r">'+ownProds(d.k).length+'</td><td>'+(distList().length>1&&!isMainD(d.k)?'<button class="btn btn-sm btn-del" data-act="ddel" data-k="'+esc(d.k)+'">O\'chirish</button>':'')+'</td></tr>';
   }).join('');
   return '<div class="card addbox"><h2>Yangi distribyutor</h2><div class="fgrid">'+field('d-n','Distribyutor nomi',n.n,{bind:'nd.n',err:e.dn})+field('d-p','Telefon',n.ph,{bind:'nd.ph',ph:'+998 90 123 45 67'})+field('d-a','Manzil',n.ad,{bind:'nd.ad',full:true})+'</div>'
     +'<div><button class="btn btn-p btn-lg" data-act="dadd">Qo\'shish</button></div></div>'
@@ -1102,8 +1155,8 @@ function dashView(){
 }
 function stockView(){
   var tot=0,val=0,lowN=0,outN=0;
-  PRODUCTS.forEach(function(p){var q=sq(p);tot+=q;val+=q*eff(p).p;if(q<=0)outN++;else if(q<=10)lowN++});
-  var rows=PRODUCTS.filter(function(p){return S.pf==='all'||p.firm===S.pf}).map(function(p){
+  AP().forEach(function(p){var q=sq(p);tot+=q;val+=q*eff(p).p;if(q<=0)outN++;else if(q<=10)lowN++});
+  var rows=AP().filter(function(p){return S.pf==='all'||p.firm===S.pf}).map(function(p){
     var q=sq(p);
     return '<tr><td>'+'<img class="pth" src="'+pic(p)+'" alt="">'+'</td><td><b>'+esc(p.name)+'</b><div class="muted">'+esc(firmOf(p.firm).n)+' · ~'+p.g+' g · korobka '+p.box+' dona</div></td>'
       +'<td><input class="in sm" inputmode="numeric" value="'+q+'" data-stock="'+p.id+'" aria-label="Qoldiq"><div class="fine">'+(isKg(p)?'kg hisobida':Math.floor(q/p.box)+' korobka + '+(q%p.box)+' dona')+'</div></td>'
@@ -1113,7 +1166,7 @@ function stockView(){
   var lg=(S.rlog||[]).slice(0,30).map(function(r){var p=PM[r.pid];return '<tr><td class="num">'+fmtT(r.t)+'</td><td>'+(p?'<b>'+esc(p.name)+'</b> <span class="muted">· '+esc(firmOf(p.firm).n)+'</span>':esc(r.pid))+'</td><td class="r num">+'+r.q+' '+(p?uName(p):'dona')+(r.k?'<div class="fine">'+r.n+' korobka</div>':'')+'</td></tr>'}).join('');
   return '<div class="stats">'+kpi(tot,'Omborda jami (dona va kg)')+kpi(money(val),'Ombor qiymati (dona narxida)')+kpi(lowN,'Oz qolgan tovarlar')+kpi(outN,'Skladda yo\'q tovarlar')+'</div>'
     +'<div class="note"><span>«Prixod» omborga kirim qo\'shadi. Mijoz katalogda har bir tovarning qoldig\'ini ko\'radi; 0 bo\'lsa «Skladda yo\'q» chiqadi va buyurtma berib bo\'lmaydi. Buyurtma «Tasdiqlandi» holatiga o\'tganda qoldiq avtomatik kamayadi, bekor qilinsa qaytadi.</span></div>'
-    +'<div class="field" style="max-width:240px"><label for="pf" class="muted" style="font-weight:500">Firma</label><select id="pf" class="in" data-bind="pf"><option value="all">Barcha firmalar</option>'+FIRMS.map(function(f){return '<option value="'+f.k+'"'+(S.pf===f.k?' selected':'')+'>'+esc(f.n)+'</option>'}).join('')+'</select></div>'
+    +'<div class="field" style="max-width:240px"><label for="pf" class="muted" style="font-weight:500">Firma</label><select id="pf" class="in" data-bind="pf"><option value="all">Barcha firmalar</option>'+AF().map(function(f){return '<option value="'+f.k+'"'+(S.pf===f.k?' selected':'')+'>'+esc(f.n)+'</option>'}).join('')+'</select></div>'
     +'<div class="card tw"><table><thead><tr><th>Rasm</th><th>Mahsulot</th><th>Qoldiq (dona yoki kg)</th><th>Holat</th><th>Prixod</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
     +'<div class="card tw"><h3 style="padding:14px 16px 0">Oxirgi kirimlar</h3><table><thead><tr><th>Sana</th><th>Mahsulot</th><th class="r">Kirim</th></tr></thead><tbody>'+(lg||'<tr><td colspan="3" class="muted">Hali kirim yo\'q.</td></tr>')+'</tbody></table></div>';
 }
@@ -1168,8 +1221,9 @@ function adminClientsView(){
 }
 function addForm(){
   var n=S.np,e=S.errs;
+  if(!AF().some(function(f){return f.k===n.firm}))n.firm=(AF()[0]||FIRMS[0]).k;
   return '<div class="card addbox"><h2>Yangi tovar</h2><div class="fgrid">'
-    +'<div class="field"><label for="n-firm">Firma</label><select id="n-firm" class="in" data-bind="np.firm">'+FIRMS.map(function(f){return '<option value="'+f.k+'"'+(n.firm===f.k?' selected':'')+'>'+esc(f.n)+'</option>'}).join('')+'</select></div>'
+    +'<div class="field"><label for="n-firm">Firma</label><select id="n-firm" class="in" data-bind="np.firm">'+AF().map(function(f){return '<option value="'+f.k+'"'+(n.firm===f.k?' selected':'')+'>'+esc(f.n)+'</option>'}).join('')+'</select></div>'
     +'<div class="field"><label for="n-type">Turi</label><select id="n-type" class="in" data-bind="np.type">'+TYPES.map(function(t){return '<option'+(n.type===t?' selected':'')+'>'+esc(t)+'</option>'}).join('')+'</select></div>'
     +field('n-name','Tovar nomi',n.name,{bind:'np.name',err:e.name,full:true})
     +'<div class="field"><label for="n-sk">Sotuv birligi</label><select id="n-sk" class="in" data-bind="np.sk"><option value="d"'+(n.sk!=='kg'?' selected':'')+'>Dona (korobka bilan)</option><option value="kg"'+(n.sk==='kg'?' selected':'')+'>Kilogramm</option></select></div>'
@@ -1183,7 +1237,7 @@ function addForm(){
     +'</div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-p btn-lg" data-act="addprod">Qo\'shish</button><button class="btn btn-lg" data-act="addtoggle">Bekor qilish</button></div></div>';
 }
 function adminPricesView(){
-  var list=S.pf==='all'?PRODUCTS:PRODUCTS.filter(function(p){return p.firm===S.pf});
+  var list=S.pf==='all'?AP():AP().filter(function(p){return p.firm===S.pf});
   var n=Object.keys(S.draft).length;
   var rows=list.map(function(p){
     var d=S.draft[p.id],e=eff(p);
@@ -1202,7 +1256,7 @@ function adminPricesView(){
   var goneHtml=gone.length?'<div class="card form"><h3>O\'chirilgan tovarlar</h3><div class="stack" style="gap:8px">'+gone.map(function(p){return '<div style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span><b>'+esc(p.name)+'</b> <span class="muted">· '+esc(firmOf(p.firm).n)+'</span></span><button class="btn btn-sm" data-act="restore" data-id="'+p.id+'">Qaytarish</button></div>'}).join('')+'</div></div>':'';
   return '<div class="note warn"><span>Namunaviy narxlar o\'rniga o\'z narxlaringizni kiriting va «Saqlash» tugmasini bosing.</span></div>'
     +'<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between">'
-    +'<div class="field" style="min-width:200px"><label for="pf" class="muted" style="font-weight:500">Firma</label><select id="pf" class="in" data-bind="pf"><option value="all">Barcha firmalar</option>'+FIRMS.map(function(f){return '<option value="'+f.k+'"'+(S.pf===f.k?' selected':'')+'>'+esc(f.n)+'</option>'}).join('')+'</select></div>'
+    +'<div class="field" style="min-width:200px"><label for="pf" class="muted" style="font-weight:500">Firma</label><select id="pf" class="in" data-bind="pf"><option value="all">Barcha firmalar</option>'+AF().map(function(f){return '<option value="'+f.k+'"'+(S.pf===f.k?' selected':'')+'>'+esc(f.n)+'</option>'}).join('')+'</select></div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-lg" data-act="addtoggle">'+(S.addOpen?'Yopish':'+ Tovar qo\'shish')+'</button>'
     +'<button class="btn btn-p btn-lg" data-act="saveprices"'+(n?'':' disabled')+'>Saqlash'+(n?' ('+n+')':'')+'</button></div></div>'
     +(S.addOpen?addForm():'')
@@ -1374,7 +1428,7 @@ async function hashPass(salt,pass){
     return 'x'+(h>>>0).toString(16);
   }
 }
-function enterAdmin(){S.role='admin';LS.set('kd_role','admin');LS.set('kd_adm_ok',true);S.view='admin';S.hist=[];S.thist=[]}
+function enterAdmin(){S.dscope=null;LS.set('kd_dscope',null);S.role='admin';LS.set('kd_role','admin');LS.set('kd_adm_ok',true);S.view='admin';S.hist=[];S.thist=[]}
 async function admRegister(){
   var f=S.adm.form,er={};
   if((f.name||'').trim().length<2)er.name='Kompaniya nomini kiriting';
@@ -1468,6 +1522,10 @@ document.addEventListener('click',function(e){
     case 'submit':submitOrder();break;
     case 'regsave':regSave();break;
     case 'cllogin':clLogin();break;
+    case 'dreg':distRegister();break;
+    case 'dlogin':distLogin();break;
+    case 'dmode':S.dmode=d.t;S.errs={};render();break;
+    case 'drole':S.role='client';LS.set('kd_role','client');S.regTab='dist';S.view='register';S.hist=[];window.scrollTo(0,0);render();break;
     case 'cllogout':S.clAuth=false;LS.set('kd_cl_ok',false);S.cl={login:'',pass:''};toast('Hisobdan chiqdingiz');go('katalog');break;
     case 'rtab':S.regTab=d.t;S.errs={};render();break;
     case 'demoadmin':S.demoAdmin=!S.demoAdmin;LS.set('kd_demoadmin',S.demoAdmin);if(!S.demoAdmin&&S.view==='admin')S.view='katalog';render();break;
@@ -1475,7 +1533,7 @@ document.addEventListener('click',function(e){
     case 'atab':if(S.adminTab!==d.t)S.thist=(S.thist||[]).concat([S.adminTab]);S.adminTab=d.t;S.errs={};S.delId=null;render();break;
     case 'admreg':admRegister();break;
     case 'admlogin':admLogin();break;
-    case 'admout':S.thist=[];S.adm.authed=false;LS.set('kd_adm_ok',false);S.role='client';LS.set('kd_role','client');S.settings=false;S.view='katalog';S.hist=[];S.errs={};window.scrollTo(0,0);render();break;
+    case 'admout':S.dscope=null;LS.set('kd_dscope',null);S.thist=[];S.adm.authed=false;LS.set('kd_adm_ok',false);S.role='client';LS.set('kd_role','client');S.settings=false;S.view='katalog';S.hist=[];S.errs={};window.scrollTo(0,0);render();break;
     case 'addtoggle':S.addOpen=!S.addOpen;S.errs={};render();break;
     case 'addprod':addProduct();break;
     case 'delask':S.delId=d.id;render();break;
@@ -1493,7 +1551,7 @@ document.addEventListener('click',function(e){
     case 'oline':var o3=adminOrders().filter(function(x){return x.id===d.id})[0];if(o3){var x3=oedOf(o3).lines[+d.i];x3.del=!x3.del;render()}break;
     case 'osave':orderSave(d.id,false);break;
     case 'fadd':addFirm();break;
-    case 'dist':if(S.cart.length&&S.cart.some(function(l){return distOf(PM[l.pid].firm)!==d.k})){S.cart=[];saveCart();toast("Savat tozalandi: buyurtma bitta distribyutordan beriladi")}
+    case 'dist':if(S.cart.length&&S.cart.some(function(l){return !inDist(PM[l.pid],d.k)})){S.cart=[];saveCart();toast("Savat tozalandi: buyurtma bitta distribyutordan beriladi")}
       S.dist=d.k;LS.set('kd_dist',d.k);S.q='';S.firm=null;S.type='all';S.view='katalog';render();break;
     case 'distchg':S.dist=null;LS.set('kd_dist',null);S.firm=null;S.view='katalog';render();break;
     case 'dadd':addDist();break;
@@ -1521,6 +1579,7 @@ document.addEventListener('click',function(e){
 });
 document.addEventListener('keydown',function(e){
   if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.bind&&e.target.dataset.bind.indexOf('cl.')===0){e.preventDefault();clLogin();return}
+  if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.bind&&e.target.dataset.bind.indexOf('dl.')===0){e.preventDefault();distLogin();return}
   if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.bind&&e.target.dataset.bind.indexOf('adm.login')===0){e.preventDefault();admLogin();return}
   if(e.key==='Escape'&&(S.modal||S.settings)){S.modal=null;S.settings=false;render();return}
   if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('pcard')){
@@ -1561,7 +1620,8 @@ document.addEventListener('change',function(e){
   if(!t.dataset.bind)return;
   if(t.dataset.bind.indexOf('oed.')===0){bindSet(t,t.value);return}
   if(t.type==='checkbox')bindSet(t,t.checked);else bindSet(t,t.value);
-  render();
+  /* Oddiy matn maydonlarida qiymat 'input' hodisasida saqlangan; qayta chizish keyingi maydondan fokusni olib qo'yardi */
+  if(t.type==='checkbox'||t.type==='radio'||t.type==='date'||t.tagName==='SELECT'||t.tagName==='TEXTAREA')render();
 });
 
 /* ---------- Ishga tushirish ---------- */
