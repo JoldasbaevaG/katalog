@@ -427,6 +427,10 @@ function phoneDigits(s){var d=String(s||'').replace(/\D/g,'');if(d.indexOf('998'
 function phoneFmt(d){return '+998 '+d.slice(0,2)+' '+d.slice(2,5)+' '+d.slice(5,7)+' '+d.slice(7,9)}
 function clamp(v){v=parseInt(v,10);if(!(v>=1))v=1;if(v>999)v=999;return v}
 function payName(k){for(var i=0;i<PAY.length;i++)if(PAY[i][0]===k)return PAY[i][1];return k}
+var SS={
+  get:function(k,d){try{var v=sessionStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set:function(k,v){try{sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
 var LS={
   get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
   set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
@@ -443,7 +447,7 @@ var S={
   co:{addr:'',date:isoDate(tomorrow),slot:SLOTS[0],pay:'cash',comment:''},
   placed:null,sending:false,
   adminTab:'dash',oq:'',rp:'7',stock:{},rlog:[],pays:[],pay:{cid:'',amt:'',m:'cash',note:''},ordFilter:'all',open:{},draft:{},pf:'all',
-  cat:{custom:[],removed:[],firms:[],dists:[],fd:{}},dist:LS.get('kd_dist',null),clAuth:LS.get('kd_cl_ok',false),dscope:LS.get('kd_dscope',null),dmode:'reg',dadm:false,dr:{fio:'',n:'',ph:'',ad:'',login:'',pass:'',pass2:''},dl:{login:'',pass:''},regTab:'reg',cl:{login:'',pass:''},thist:[],nd:{n:'',ph:'',ad:''},smsT:LS.get('kd_smst',"Hurmatli {nom}! Sizning qarzingiz {summa}. Iltimos, to'lovni amalga oshiring. Rahmat."),imgs:{},nf:{name:'',img:''},addOpen:false,delId:null,
+  cat:{custom:[],removed:[],firms:[],dists:[],fd:{}},dist:LS.get('kd_dist',null),clAuth:SS.get('kd_cl_ok',false),dscope:SS.get('kd_dscope',null),dmode:'reg',dadm:false,dr:{fio:'',n:'',ph:'',ad:'',login:'',pass:'',pass2:''},dl:{login:'',pass:''},regTab:'reg',cl:{login:'',pass:''},thist:[],nd:{n:'',ph:'',ad:''},smsT:LS.get('kd_smst',"Hurmatli {nom}! Sizning qarzingiz {summa}. Iltimos, to'lovni amalga oshiring. Rahmat."),imgs:{},nf:{name:'',img:''},addOpen:false,delId:null,
   np:{firm:FIRMS[0].k,type:TYPES[0],sk:'d',name:'',g:'',box:'',p:'',c:'',comp:'',img:''},
   adm:{profile:null,loaded:false,authed:false,form:{name:'',fio:'',phone:'',login:'',pass:'',pass2:''},login:{login:'',pass:''}}
 };
@@ -890,15 +894,17 @@ async function distRegister(){
   S.errs=er;if(Object.keys(er).length){render();return}
   var salt=Math.random().toString(36).slice(2,10),hash=await hashPass(salt,r.pass),k='d'+Date.now().toString(36);
   var nl=distList().concat([{k:k,n:nm,fio:fio,ph:phoneFmt(phoneDigits(r.ph)),ad:r.ad.trim(),login:lg,salt:salt,hash:hash}]);
-  if(await saveCatalog({custom:S.cat.custom,removed:S.cat.removed,dists:nl})){
+  var okd=await saveCatalog({custom:S.cat.custom,removed:S.cat.removed,dists:nl});
+  if(!okd&&S.mode==='cloud'&&!S.isAdmin)toast("Bulut rejimida distribyutorni faqat sahifa egasi (asosiy admin) qo'sha oladi",1);
+  if(okd){
     S.dr={fio:'',n:'',ph:'',ad:'',login:'',pass:'',pass2:''};S.errs={};toast("Distribyutor sifatida ro'yxatdan o'tdingiz");
-    enterAdmin();S.dscope=k;LS.set('kd_dscope',k);S.adm.authed=true;S.adminTab='orders';render();
+    enterAdmin();S.dscope=k;SS.set('kd_dscope',k);S.adm.authed=true;S.adminTab='orders';render();
   }
 }
 async function distLogin(){
   var l=S.dl,lg=(l.login||'').trim().toLowerCase(),d=distList().filter(function(x){return x.login===lg})[0];
   if(d&&(await hashPass(d.salt,l.pass||''))===d.hash){
-    S.dl={login:'',pass:''};S.errs={};enterAdmin();S.dscope=d.k;LS.set('kd_dscope',d.k);S.adm.authed=true;S.adminTab='orders';toast('Xush kelibsiz!');render();
+    S.dl={login:'',pass:''};S.errs={};enterAdmin();S.dscope=d.k;SS.set('kd_dscope',d.k);S.adm.authed=true;S.adminTab='orders';toast('Xush kelibsiz!');render();
   }else{S.errs={dl:'Login yoki parol noto\'g\'ri'};render()}
 }
 function distAuthView(){
@@ -1380,7 +1386,7 @@ async function regSave(){
   if(old&&old.login){c.login=old.login;c.salt=old.salt;c.hash=old.hash}
   if(full||chg){var salt=Math.random().toString(36).slice(2,10);c.login=full?lg:old.login;c.salt=salt;c.hash=await hashPass(salt,r.pass)}
   saveClient(c).then(function(){
-    if(c.login){S.clAuth=true;LS.set('kd_cl_ok',true)}
+    if(c.login){S.clAuth=true;SS.set('kd_cl_ok',true)}
     toast('Ma\'lumotlar saqlandi');
     var nx=S.afterReg||'katalog';S.afterReg='katalog';S.hist.pop();go(nx,true);
   }).catch(function(e){toast(errMsg(e),1)});
@@ -1390,7 +1396,7 @@ async function clLogin(){
   if(!c||!c.login){S.errs={cl:'Bu qurilmada hisob topilmadi. Avval ro\'yxatdan o\'ting.'};render();return}
   var h=await hashPass(c.salt,l.pass||'');
   if((l.login||'').trim().toLowerCase()===c.login&&h===c.hash){
-    S.clAuth=true;LS.set('kd_cl_ok',true);S.cl={login:'',pass:''};S.errs={};
+    S.clAuth=true;SS.set('kd_cl_ok',true);S.cl={login:'',pass:''};S.errs={};
     var nx=S.afterReg||'katalog';S.afterReg='katalog';toast('Xush kelibsiz!');go(nx,true);
   }else{S.errs={cl:'Login yoki parol noto\'g\'ri'};render()}
 }
@@ -1436,7 +1442,7 @@ async function hashPass(salt,pass){
     return 'x'+(h>>>0).toString(16);
   }
 }
-function enterAdmin(){S.dscope=null;LS.set('kd_dscope',null);S.role='admin';LS.set('kd_role','admin');LS.set('kd_adm_ok',true);S.view='admin';S.hist=[];S.thist=[]}
+function enterAdmin(){S.dscope=null;SS.set('kd_dscope',null);S.role='admin';SS.set('kd_role','admin');SS.set('kd_adm_ok',true);S.view='admin';S.hist=[];S.thist=[]}
 async function admRegister(){
   var f=S.adm.form,er={};
   if((f.name||'').trim().length<2)er.name='Kompaniya nomini kiriting';
@@ -1535,15 +1541,15 @@ document.addEventListener('click',function(e){
     case 'dreg':distRegister();break;
     case 'dlogin':distLogin();break;
     case 'dmode':S.dmode=d.t;S.errs={};render();break;
-    case 'drole':S.role='client';LS.set('kd_role','client');S.regTab='dist';S.view='register';S.hist=[];window.scrollTo(0,0);render();break;
-    case 'cllogout':S.clAuth=false;LS.set('kd_cl_ok',false);S.cl={login:'',pass:''};toast('Hisobdan chiqdingiz');go('katalog');break;
+    case 'drole':S.role='client';SS.set('kd_role','client');S.regTab='dist';S.view='register';S.hist=[];window.scrollTo(0,0);render();break;
+    case 'cllogout':S.clAuth=false;SS.set('kd_cl_ok',false);S.cl={login:'',pass:''};toast('Hisobdan chiqdingiz');go('katalog');break;
     case 'rtab':S.regTab=d.t;S.errs={};render();break;
     case 'demoadmin':S.demoAdmin=!S.demoAdmin;LS.set('kd_demoadmin',S.demoAdmin);if(!S.demoAdmin&&S.view==='admin')S.view='katalog';render();break;
     case 'aback':var ab=S.thist&&S.thist.length?S.thist.pop():'dash';S.adminTab=ab;S.errs={};S.delId=null;window.scrollTo(0,0);render();break;
     case 'atab':if(S.adminTab!==d.t)S.thist=(S.thist||[]).concat([S.adminTab]);S.adminTab=d.t;S.errs={};S.delId=null;render();break;
     case 'admreg':admRegister();break;
     case 'admlogin':admLogin();break;
-    case 'admout':S.dscope=null;LS.set('kd_dscope',null);S.thist=[];S.adm.authed=false;LS.set('kd_adm_ok',false);S.role='client';LS.set('kd_role','client');S.settings=false;S.view='katalog';S.hist=[];S.errs={};window.scrollTo(0,0);render();break;
+    case 'admout':S.dscope=null;SS.set('kd_dscope',null);S.thist=[];S.adm.authed=false;SS.set('kd_adm_ok',false);S.role='client';SS.set('kd_role','client');S.settings=false;S.view='katalog';S.hist=[];S.errs={};window.scrollTo(0,0);render();break;
     case 'addtoggle':S.addOpen=!S.addOpen;S.errs={};render();break;
     case 'addprod':addProduct();break;
     case 'delask':S.delId=d.id;render();break;
@@ -1555,8 +1561,8 @@ document.addEventListener('click',function(e){
     case 'saveprices':savePrices();break;
     case 'rrole':S.regRole=d.r;S.errs={};render();break;
     case 'toadmin':go('register');S.regRole='admin';render();break;
-    case 'role':S.role=d.r;LS.set('kd_role',S.role);S.view=S.role==='admin'?'admin':'katalog';S.hist=[];window.scrollTo(0,0);render();break;
-    case 'chrole':S.role=null;LS.set('kd_role',null);S.settings=false;S.modal=null;S.adm.authed=false;S.view='katalog';S.hist=[];render();break;
+    case 'role':S.role=d.r;SS.set('kd_role',S.role);S.view=S.role==='admin'?'admin':'katalog';S.hist=[];window.scrollTo(0,0);render();break;
+    case 'chrole':S.role=null;SS.set('kd_role',null);S.settings=false;S.modal=null;S.adm.authed=false;S.view='katalog';S.hist=[];render();break;
     case 'tpl':var oo=adminOrders().filter(function(x){return x.id===d.id})[0];if(oo){var dd=oedOf(oo);dd.msg=(dd.msg?dd.msg+' ':'')+TPL[+d.i];render()}break;
     case 'oline':var o3=adminOrders().filter(function(x){return x.id===d.id})[0];if(o3){var x3=oedOf(o3).lines[+d.i];x3.del=!x3.del;render()}break;
     case 'osave':orderSave(d.id,false);break;
@@ -1639,10 +1645,17 @@ function startLocal(){
   S.mode='local';
   S.client=LS.get('kd_client',null);S.myOrders=LS.get('kd_orders',[]);
   S.statuses=LS.get('kd_status',{});S.prices=LS.get('kd_prices',{});S.stock=LS.get('kd_stock',{});S.rlog=LS.get('kd_rlog',[]);S.pays=LS.get('kd_pays',[]);S.imgs=LS.get('kd_imgs',{});
-  S.role=LS.get('kd_role','client');S.adm.authed=!!LS.get('kd_adm_ok',false);S.cliLoaded=true;
+  S.role=SS.get('kd_role','client');S.adm.authed=!!SS.get('kd_adm_ok',false);S.cliLoaded=true;
   S.adm.profile=LS.get('kd_admin',null);S.adm.loaded=true;
   applyCatalog(LS.get('kd_catalog',{}));
 }
+function localSync(){
+  S.statuses=LS.get('kd_status',{});S.prices=LS.get('kd_prices',{});S.stock=LS.get('kd_stock',{});S.rlog=LS.get('kd_rlog',[]);
+  S.pays=LS.get('kd_pays',[]);S.imgs=LS.get('kd_imgs',{});S.myOrders=LS.get('kd_orders',[]);
+  S.client=LS.get('kd_client',null);S.adm.profile=LS.get('kd_admin',null);
+  applyCatalog(LS.get('kd_catalog',{}));render();
+}
+window.addEventListener('storage',function(e){if(S.mode==='local'&&e.key&&e.key.indexOf('kd_')===0)localSync()});
 function startCloud(db,uid,isAdmin){
   S.mode='cloud';S.db=db;S.uid=uid;S.isAdmin=isAdmin;S.role=isAdmin?'admin':'client';
   var bad=function(){};
