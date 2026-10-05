@@ -1221,7 +1221,8 @@ function adminClientsView(){
 }
 function addForm(){
   var n=S.np,e=S.errs;
-  if(!AF().some(function(f){return f.k===n.firm}))n.firm=(AF()[0]||FIRMS[0]).k;
+  if(!AF().length)return '<div class="note warn"><span>Tovar qo\'shishdan oldin «Firmalar» bo\'limida o\'z firmangizni qo\'shing.</span></div><div><button class="btn btn-p" data-act="atab" data-t="firms">+ Firma qo\'shish</button></div>';
+  if(!AF().some(function(f){return f.k===n.firm}))n.firm=AF()[0].k;
   return '<div class="card addbox"><h2>Yangi tovar</h2><div class="fgrid">'
     +'<div class="field"><label for="n-firm">Firma</label><select id="n-firm" class="in" data-bind="np.firm">'+AF().map(function(f){return '<option value="'+f.k+'"'+(n.firm===f.k?' selected':'')+'>'+esc(f.n)+'</option>'}).join('')+'</select></div>'
     +'<div class="field"><label for="n-type">Turi</label><select id="n-type" class="in" data-bind="np.type">'+TYPES.map(function(t){return '<option'+(n.type===t?' selected':'')+'>'+esc(t)+'</option>'}).join('')+'</select></div>'
@@ -1472,6 +1473,7 @@ async function saveCatalog(cat){
 }
 async function addProduct(){
   var n=S.np,er={};
+  if(!AF().some(function(f){return f.k===n.firm})){toast('Avval o\'z firmangizni qo\'shing',1);return}
   if((n.name||'').trim().length<2)er.name='Tovar nomini kiriting';
   var g=toInt(n.g),box=toInt(n.box),p=toInt(n.p),c=toInt(n.c);
   var kgp=n.sk==='kg';
