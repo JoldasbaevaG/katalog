@@ -748,7 +748,7 @@ function pcard(p){
 }
 
 /* Distribyutorlar: har bir firma bitta distribyutorga biriktiriladi; mijoz avval distribyutorni tanlaydi */
-function distList(){var d=S.cat.dists||[];return d.length?d:[{k:'main',n:'Asosiy distribyutor',ph:'',ad:''}]}
+function distList(){var d=S.cat.dists||[];return d.length?d:[{k:'main',n:'Kolbasa distribyutor',ph:'',ad:''}]}
 function distOf(fk){var k=(S.cat.fd||{})[fk],L=distList();return L.some(function(d){return d.k===k})?k:L[0].k}
 function distGet(k){return distList().filter(function(d){return d.k===k})[0]}
 function isMainD(k){return k===distList()[0].k}
